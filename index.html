@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estadística y Exploración de Datos II para el coloquio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* layout: índice lateral fijo + columna de lectura de 780px; cada tema lleva el color de su eje */
+  --bg:#f1f5f3; --surface:#ffffff; --surface-2:#e7eeea; --ink:#15272b; --muted:#55696d; --line:#d3deda;
+  --accent:#f4b81a; --accent-ink:#3a2c00;
+  --e1:#0b7a6a; --e2:#3355cc; --e3:#c23a62; --e4:#7a4fc0; --e5:#a85608; --e6:#55696d; --hb:#15272b; --hf:#f1f5f3; --s1:#3355cc; --s2:#c2540a; --s3:#06906f;
+  --good:#17804a; --warn:#a86400; --bad:#c2392b;
+  --fd:'Bricolage Grotesque','Trebuchet MS',system-ui,sans-serif;
+  --fb:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --r:14px; --ej:var(--e1);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f181b; --surface:#172327; --surface-2:#1f2f34; --ink:#e5eeee; --muted:#9bb0b3; --line:#2d3f45;
+  --accent:#ffd04a; --accent-ink:#2b2000;
+  --e1:#46caae; --e2:#93aaff; --e3:#ff8eaa; --e4:#c3a6ff; --e5:#ffb066; --e6:#9bb0b3; --hb:#22363c; --hf:#e5eeee; --s1:#6b84e6; --s2:#d07a2c; --s3:#1fa98c;
+  --good:#4fd08c; --warn:#f2b450; --bad:#ff8172; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f181b; --surface:#172327; --surface-2:#1f2f34; --ink:#e5eeee; --muted:#9bb0b3; --line:#2d3f45;
+  --accent:#ffd04a; --accent-ink:#2b2000;
+  --e1:#46caae; --e2:#93aaff; --e3:#ff8eaa; --e4:#c3a6ff; --e5:#ffb066; --e6:#9bb0b3; --hb:#22363c; --hf:#e5eeee; --s1:#6b84e6; --s2:#d07a2c; --s3:#1fa98c;
+  --good:#4fd08c; --warn:#f2b450; --bad:#ff8172; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--fb);-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--fd);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.9rem,4.5vw,2.7rem);font-weight:700;letter-spacing:-.02em}
+h2{font-size:1.45rem;font-weight:700;margin-top:2.2rem}
+h3{font-size:1.2rem;font-weight:700;margin:2.2rem 0 .7rem}
+p{margin:.7rem 0}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+.eje-1{--ej:var(--e1)}.eje-2{--ej:var(--e2)}.eje-3{--ej:var(--e3)}
+
+/* estructura */
+.app{display:grid;grid-template-columns:292px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--surface);border-right:1px solid var(--line);padding:22px 16px 30px}
+.brand{display:block;text-decoration:none;font:700 1.25rem/1.1 var(--fd);letter-spacing:-.01em;padding:0 8px}
+.brand small{display:block;font:500 .8rem var(--fb);color:var(--muted);margin-top:4px;letter-spacing:0}
+.prog{margin:16px 8px 6px}
+.prog-bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.prog-bar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+.prog small{color:var(--muted);font-size:.8rem}
+.nav h4{font:600 .72rem var(--fb);text-transform:uppercase;letter-spacing:.08em;color:var(--ej,var(--muted));margin:20px 8px 6px}
+.nav a{display:flex;gap:9px;align-items:baseline;padding:6px 8px;border-radius:9px;text-decoration:none;font-size:.92rem;line-height:1.3}
+.nav a:hover{background:var(--surface-2)}
+.nav a.on{background:color-mix(in srgb,var(--ej,var(--accent)) 16%,var(--surface));font-weight:600}
+.nav a .num{flex:none;width:1.5em;font-variant-numeric:tabular-nums;color:var(--muted);font-size:.8rem}
+.nav a .ck{margin-left:auto;flex:none;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--line);align-self:center}
+.nav a.done .ck{background:var(--good);border-color:var(--good)}
+.top,.scrim{display:none}
+main{padding:36px clamp(16px,4vw,56px) 80px;min-width:0}
+.wrap{max-width:780px;margin:0 auto}
+.wrap.wide{max-width:1040px}
+@media (max-width:900px){
+  .app{display:block}
+  .top{display:flex;position:sticky;top:0;z-index:20;align-items:center;gap:12px;background:var(--surface);border-bottom:1px solid var(--line);padding:10px 16px}
+  .top b{font-family:var(--fd)}
+  .side{position:fixed;z-index:30;left:0;top:0;width:min(310px,88vw);transform:translateX(-102%);transition:transform .2s;box-shadow:0 0 40px rgba(0,0,0,.25)}
+  .side.open{transform:none}
+  .scrim{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.35)}
+  .side.open~.scrim{display:block}
+  main{padding-top:24px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* piezas */
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;cursor:pointer;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;font-size:.95rem;text-decoration:none}
+.btn:hover{filter:brightness(1.15)}
+.btn.acc{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.ghost:hover{background:var(--surface-2);filter:none}
+.btn.sm{padding:6px 12px;font-size:.85rem}
+.btn:disabled{cursor:default;opacity:.75;filter:none}
+.btn.right{background:var(--good);color:#fff;box-shadow:none;opacity:1}
+.btn.wrong{background:var(--bad);color:#fff;box-shadow:none;opacity:1}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px}
+.eyebrow{font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ej)}
+.lead{font-size:1.15rem;color:var(--muted);margin:.6rem 0 1.4rem;max-width:62ch}
+.def{background:color-mix(in srgb,var(--ej) 10%,var(--surface));border-left:5px solid var(--ej);border-radius:0 var(--r) var(--r) 0;padding:14px 18px;font-size:1.06rem}
+.note{background:var(--surface-2);border-radius:var(--r);padding:12px 16px;font-size:.95rem}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:var(--accent);color:var(--accent-ink);border-radius:6px;padding:1px 7px;vertical-align:.1em}
+.template{font-family:var(--fd);font-size:1.1rem;background:var(--surface);border:1.5px dashed var(--ej);border-radius:var(--r);padding:16px 18px}
+.template i{color:var(--ej);font-style:normal;font-weight:700}
+.g2,.g3{display:grid;gap:12px;margin:1rem 0}
+.g2{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.mini{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--ej);border-radius:var(--r);padding:12px 16px}
+.mini b{font-family:var(--fd);font-size:1.05rem}
+.mini p{margin:.3rem 0 0;font-size:.93rem;color:var(--muted)}
+.mini.warn{border-top-color:var(--warn)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:.8rem 0}
+.chips span,.chip{background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:4px 12px;font-size:.88rem}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:1rem 0;counter-reset:f}
+.flow>div{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.flow small{font-weight:700;color:var(--ej)}
+.flow b{font-family:var(--fd);line-height:1.2}
+.flow span{font-size:.86rem;color:var(--muted)}
+.flow.sm{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.flow.sm>div:not(:last-child)::after{content:"→";position:absolute;right:-11px;top:50%;transform:translateY(-50%);color:var(--ej);font-weight:700;z-index:1}
+.tw{overflow-x:auto;margin:1rem 0;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{background:color-mix(in srgb,var(--ej) 12%,var(--surface));font-weight:700;white-space:nowrap}
+tbody th{font-weight:600;min-width:120px}
+tbody tr:last-child>*{border-bottom:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.formula{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:center;font:500 1.2rem var(--fd);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:1rem 0}
+.frac{display:inline-flex;flex-direction:column;text-align:center}
+.frac span:first-child{border-bottom:2px solid var(--ink);padding:0 8px 3px}
+.frac span:last-child{padding:3px 8px 0}
+
+/* widgets */
+.w{margin:1.2rem 0}
+.box{background:var(--surface);border:1.5px solid color-mix(in srgb,var(--ej) 45%,var(--line));border-radius:var(--r);padding:18px 20px}
+.box-t{font:700 1rem var(--fd);margin:0 0 .6rem;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.box-t .count{font:500 .82rem var(--fb);color:var(--muted)}
+.box-t em{font:600 .7rem var(--fb);font-style:normal;text-transform:uppercase;letter-spacing:.08em;color:var(--ej)}
+.stmt{font-size:1.12rem;font-weight:500;margin:.4rem 0 1rem;min-height:3.2em}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.fb{margin:.8rem 0 0;font-size:.95rem;min-height:1.5em}
+.fb .btn{margin-left:8px}
+.big{font:700 2rem var(--fd);margin:.3rem 0 1rem}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px;align-items:end}
+.fields label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;font-weight:600;color:var(--muted)}
+.fields input,.fields select,.search{background:var(--bg);border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;width:100%;color:var(--ink)}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:12px 0}
+.res div{background:var(--surface-2);border-radius:10px;padding:10px 12px}
+.res small{display:block;color:var(--muted);font-size:.78rem;font-weight:600}
+.res b{font:700 1.3rem var(--fd);font-variant-numeric:tabular-nums}
+.res .ok b{color:var(--good)}.res .no b{color:var(--bad)}
+.verdict{font-weight:600}
+svg{max-width:100%;height:auto;display:block}
+svg text{font-family:var(--fb);fill:var(--ink)}
+.scroll{overflow-x:auto}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.seg button{border:1.5px solid var(--line);background:var(--surface);border-radius:9px;padding:6px 12px;cursor:pointer;font-weight:600;font-size:.9rem}
+.seg button[aria-pressed="true"]{background:var(--ej);border-color:var(--ej);color:var(--surface)}
+.detail{background:var(--surface-2);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:.96rem}
+.detail b{font-family:var(--fd)}
+input[type=range]{width:100%;accent-color:var(--ej)}
+
+.foda{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.foda div{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:.9rem;transition:opacity .2s}
+.foda b{font-family:var(--fd);display:block}
+.foda small{color:var(--muted);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em}
+.foda ul{margin:.3rem 0 0;padding-left:1.1em}
+.foda .dim{opacity:.35}
+.foda .hit{border-color:var(--ej);background:color-mix(in srgb,var(--ej) 10%,var(--surface))}
+@media (max-width:520px){.foda{grid-template-columns:1fr}}
+
+.canvas{display:grid;gap:6px;grid-template-columns:repeat(10,1fr);grid-template-areas:"so so ac ac pv pv re re se se" "so so rc rc pv pv ca ca se se" "co co co co co in in in in in"}
+.canvas button{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:10px;min-height:86px;text-align:left;cursor:pointer;font:700 .88rem/1.2 var(--fd);display:flex;flex-direction:column;justify-content:space-between;gap:6px}
+.canvas button small{font:500 .74rem var(--fb);color:var(--muted)}
+.canvas button[aria-pressed="true"]{background:var(--ej);border-color:var(--ej);color:var(--surface)}
+.canvas button[aria-pressed="true"] small{color:inherit;opacity:.85}
+@media (max-width:640px){.canvas{grid-template-columns:1fr 1fr;grid-template-areas:"se pv" "ca re" "in in" "rc ac" "so so" "co co"}}
+
+.tree{font-size:.9rem}
+.tree .root{background:var(--ej);color:var(--surface);border-radius:10px;padding:8px 14px;font:700 1rem var(--fd);text-align:center;margin-bottom:10px}
+.tree .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px}
+.tree .col>b{display:block;background:color-mix(in srgb,var(--ej) 18%,var(--surface));border-radius:8px;padding:6px 10px;font-family:var(--fd)}
+.tree .col span{display:block;border:1px solid var(--line);border-radius:8px;padding:4px 10px;margin:5px 0 0 12px;font-size:.84rem}
+
+.steps{display:flex;gap:6px;flex-wrap:wrap}
+.steps button{flex:1 1 110px;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 8px;cursor:pointer;font:700 .9rem var(--fd)}
+.steps button small{display:block;font:600 .7rem var(--fb);color:var(--muted)}
+.steps button[aria-pressed="true"]{background:var(--ej);border-color:var(--ej);color:var(--surface)}
+.steps button[aria-pressed="true"] small{color:inherit}
+.band{margin-top:6px;border:1.5px dashed var(--ej);border-radius:10px;text-align:center;padding:5px;font-size:.84rem;font-weight:600;color:var(--ej)}
+.meter{height:12px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin:6px 0 2px}
+.meter i{display:block;height:100%;background:var(--ej);transition:width .25s}
+
+.matrix{display:grid;grid-template-columns:auto repeat(3,1fr);gap:5px;font-size:.84rem}
+.matrix .ax{display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted);padding:4px 8px}
+.matrix .cell{min-height:64px;border-radius:9px;padding:6px;display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start}
+.lv1{background:color-mix(in srgb,var(--good) 20%,var(--surface))}
+.lv2{background:color-mix(in srgb,var(--warn) 24%,var(--surface))}
+.lv3{background:color-mix(in srgb,var(--bad) 24%,var(--surface))}
+.matrix .cell button{border:0;background:var(--ink);color:var(--bg);border-radius:7px;padding:3px 9px;font-weight:700;cursor:pointer;font-size:.82rem}
+.matrix .cell button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.pill{display:inline-block;border-radius:99px;padding:1px 10px;font-size:.8rem;font-weight:700}
+.pill.ok{background:color-mix(in srgb,var(--good) 20%,var(--surface));color:var(--good)}
+.pill.wa{background:color-mix(in srgb,var(--warn) 24%,var(--surface));color:var(--warn)}
+.pill.no{background:color-mix(in srgb,var(--bad) 22%,var(--surface));color:var(--bad)}
+.raci td.c{text-align:center;font-weight:700}
+.raci .R{color:var(--e2)}.raci .A{color:var(--e3)}.raci .C{color:var(--e1)}.raci .I{color:var(--muted)}
+.check{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+.check label{display:flex;gap:10px;align-items:flex-start;background:var(--surface-2);border-radius:9px;padding:8px 12px;cursor:pointer}
+.check input{margin-top:.35em;accent-color:var(--good);width:17px;height:17px;flex:none}
+
+/* coloquio, quiz, tarjetas */
+.coloquio{margin:2.4rem 0 1rem;background:var(--ink);color:var(--bg);border-radius:var(--r);padding:20px 22px}
+.coloquio small{font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:.74rem;color:var(--accent)}
+.coloquio p{font:500 1.18rem/1.4 var(--fd);margin:.4rem 0 0}
+.links{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.9rem;color:var(--muted)}
+.links a{text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:3px 12px}
+.links a:hover{border-color:var(--ej)}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin:12px 0}
+.q-t{font-weight:600;margin:0 0 10px;display:flex;gap:10px}
+.q-n{flex:none;width:1.7em;height:1.7em;border-radius:50%;background:var(--ej);color:var(--surface);display:grid;place-items:center;font-size:.82rem;font-weight:700}
+.q-o{display:grid;gap:7px}
+.q-o button{text-align:left;border:1.5px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 13px;cursor:pointer}
+.q-o button:hover:not(:disabled){border-color:var(--ej)}
+.q-o button.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 16%,var(--surface));font-weight:600}
+.q-o button.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--surface))}
+.q-o button:disabled{cursor:default}
+.foot{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-top:2.4rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+.flash{min-height:230px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:10px;cursor:pointer;width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:20px;padding:28px}
+.flash .term{font:700 clamp(1.5rem,4vw,2.1rem)/1.15 var(--fd);text-wrap:balance}
+.flash .back{font-size:1.1rem;max-width:52ch}
+.flash small{color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0}
+.row .sp{margin-left:auto}
+.clock{font:700 3.2rem/1 var(--fd);font-variant-numeric:tabular-nums}
+.clock.end{color:var(--bad)}
+.picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;margin:10px 0}
+.picks label{display:flex;gap:8px;align-items:baseline;border:1.5px solid var(--line);background:var(--surface);border-radius:9px;padding:6px 10px;font-size:.88rem;cursor:pointer}
+.picks label:has(input:checked){border-color:var(--ej);background:color-mix(in srgb,var(--ej) 12%,var(--surface));font-weight:600}
+.picks input{accent-color:var(--ej)}
+details{background:var(--surface-2);border-radius:10px;padding:10px 14px;margin:8px 0}
+summary{cursor:pointer;font-weight:600}
+dl.glos{margin:0}
+dl.glos div{padding:12px 0;border-bottom:1px solid var(--line)}
+dl.glos dt{font:700 1.05rem var(--fd)}
+dl.glos dd{margin:.2rem 0 0;color:var(--muted)}
+dl.glos a{font-size:.82rem;color:var(--ej);font-weight:600;text-decoration:none}
+
+/* inicio */
+.hero{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(240px,1fr);gap:20px;align-items:stretch}
+@media (max-width:760px){.hero{grid-template-columns:1fr}}
+.exam{background:var(--ink);color:var(--bg);border-radius:var(--r);padding:20px 22px}
+.exam h2{margin:0 0 .6rem;font-size:1.15rem;color:var(--accent)}
+.exam .t{display:flex;gap:12px;align-items:baseline;margin:.5rem 0}
+.exam .t>b{font:700 1.7rem var(--fd);flex:none;width:2.6em}
+.exam .t span{font-size:.93rem}
+.ejes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:1rem}
+.ejecard{background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--ej);border-radius:var(--r);padding:16px 16px 10px}
+.ejecard h3{margin:0;font-size:1.15rem}
+.ejecard>p{margin:.2rem 0 .7rem;font-size:.88rem;color:var(--muted)}
+.ejecard a{display:flex;gap:9px;align-items:baseline;text-decoration:none;padding:6px 8px;margin:0 -8px;border-radius:8px;font-size:.93rem;line-height:1.3}
+.ejecard a:hover{background:var(--surface-2)}
+.ejecard a .num{font-weight:700;color:var(--ej);width:1.5em;flex:none;font-variant-numeric:tabular-nums}
+.ejecard a .ck{margin-left:auto;font-size:.74rem;font-weight:700;color:var(--good);flex:none}
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:1rem}
+.tools a{text-decoration:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:block}
+.tools a:hover{border-color:var(--ink)}
+.tools b{font:700 1.1rem var(--fd);display:block}
+.tools span{font-size:.9rem;color:var(--muted)}
+
+/* añadidos: más unidades, gráficos y simulador oral */
+.eje-4{--ej:var(--e4)}.eje-5{--ej:var(--e5)}.eje-6{--ej:var(--e6)}
+svg .ax{stroke:var(--muted);stroke-width:1;fill:none}
+svg .gr{stroke:var(--line);stroke-width:1}
+svg .l1{stroke:var(--s1);stroke-width:2.5;fill:none}
+svg .l2{stroke:var(--s2);stroke-width:2.5;fill:none}
+svg .lm{stroke:var(--muted);stroke-width:1.5;fill:none;stroke-dasharray:5 4}
+svg .a1{fill:var(--s1);opacity:.25}.a2{fill:var(--s2);opacity:.25}
+svg .b1{fill:var(--s1)}svg .b2{fill:var(--s2)}svg .bm{fill:var(--line)}
+svg .d1{fill:var(--s1);stroke:var(--surface);stroke-width:1.5}
+svg .d2{fill:var(--s2);stroke:var(--surface);stroke-width:1.5}
+svg .d3{fill:var(--s3);stroke:var(--surface);stroke-width:1.5}
+svg .dk{fill:var(--ink);stroke:var(--surface);stroke-width:2}
+svg .th{stroke:var(--ink);stroke-width:2;stroke-dasharray:6 4;fill:none}
+svg .rs{stroke:var(--s2);stroke-width:1.5}
+svg text{font-size:12px}
+svg text.mu{fill:var(--muted)}
+svg text.bd{font-weight:700}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:.85rem;color:var(--muted);margin:.3rem 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.fields label span b{color:var(--ink);font-variant-numeric:tabular-nums}
+.cm{display:grid;grid-template-columns:auto 1fr 1fr;gap:5px;font-size:.88rem;margin:10px 0;max-width:460px}
+.cm>div{border-radius:9px;padding:8px 10px}
+.cm .h{font-weight:700;color:var(--muted);font-size:.78rem;display:flex;align-items:center;justify-content:center;text-align:center;padding:4px}
+.cm .ok{background:color-mix(in srgb,var(--good) 18%,var(--surface))}
+.cm .ko{background:color-mix(in srgb,var(--bad) 16%,var(--surface))}
+.cm b{display:block;font:700 1.3rem var(--fd);font-variant-numeric:tabular-nums}
+.folds{display:grid;gap:5px;margin:8px 0}
+.folds>div{display:grid;grid-template-columns:5.5em repeat(var(--k),1fr);gap:4px;align-items:center;font-size:.8rem;opacity:.45}
+.folds>div.cur{opacity:1}
+.folds span{border-radius:6px;padding:5px 2px;text-align:center;background:color-mix(in srgb,var(--s1) 22%,var(--surface));font-weight:600}
+.folds span.v{background:var(--s2);color:#fff}
+pre{background:var(--surface-2);border-radius:10px;padding:12px 14px;overflow-x:auto;font:500 .84rem/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin:1rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em;background:var(--surface-2);border-radius:5px;padding:1px 5px}
+pre code{background:none;padding:0}
+.switch{display:block;margin:14px 8px 0;padding:9px 12px;border:1.5px dashed var(--line);border-radius:10px;text-decoration:none;font-size:.86rem;line-height:1.3}
+.switch b{display:block;font-family:var(--fd)}
+.switch:hover{border-color:var(--ink)}
+.oral-q{font:600 1.3rem/1.3 var(--fd);margin:.3rem 0 1rem;text-wrap:balance}
+.say{border-left:4px solid var(--accent);padding-left:12px;font-style:italic}
+.trap{background:color-mix(in srgb,var(--warn) 14%,var(--surface));border-radius:var(--r);padding:12px 16px;font-size:.96rem}
+.trap b:first-child{color:var(--warn)}
+article ul,article ol{padding-left:1.3em}
+article li{margin:.3rem 0}
+
+.coloquio,.exam{background:var(--hb);color:var(--hf)}
+.exam .t>b{width:auto;min-width:3.6em;font-size:1.3rem}
+.formula>span{text-align:center;line-height:2.2}
+.frac{vertical-align:middle;line-height:1.3}
+.duo{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:12px;align-items:end}
+@media (max-width:640px){.duo{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side" aria-label="Índice de la materia"></aside>
+  <div class="scrim" id="scrim"></div>
+  <div>
+    <div class="top"><button class="btn ghost sm" id="menu" aria-controls="side">Índice</button><b>Estadística II</b></div>
+    <main id="main" tabindex="-1"></main>
+  </div>
+</div>
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const fmt=(n,d=2)=>Number(n).toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pct=(n,d=1)=>isFinite(n)?fmt(n*100,d)+' %':'—';
+const T=(h,r)=>`<div class="tw"><table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${r.map(x=>`<tr>${x.map((c,i)=>i?`<td>${c}</td>`:`<th scope="row">${c}</th>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+const W=n=>`<div class="w" data-w="${n}"></div>`;
+const L=a=>`<ul>${a.map(i=>`<li>${i}</li>`).join('')}</ul>`;
+const O=a=>`<ol>${a.map(i=>`<li>${i}</li>`).join('')}</ol>`;
+const D=t=>`<p class="def">${t}</p>`;
+const EJ=`<span class="tag">Ejemplo</span> `;
+const TRAP=t=>`<p class="trap"><b>Error frecuente.</b> ${t}</p>`;
+const MINI=a=>`<div class="g2">${a.map(m=>`<div class="mini"><b>${m[0]}</b><p>${m[1]}</p></div>`).join('')}</div>`;
+const FLOW=(a,sm)=>`<div class="flow${sm?' sm':''}">${a.map((s,i)=>`<div>${sm?'':`<small>${i+1}</small>`}<b>${s[0]}</b><span>${s[1]||''}</span></div>`).join('')}</div>`;
+const F=t=>`<div class="formula"><span>${t}</span></div>`;
+const FR=(a,b)=>`<span class="frac"><span>${a}</span><span>${b}</span></span>`;
+const CODE=t=>`<pre><code>${t.replace(/</g,'&lt;')}</code></pre>`;
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const box=(title,body,tag='Interactivo')=>`<div class="box"><p class="box-t"><span>${title}</span><em>${tag}</em></p>${body}</div>`;
+const res=a=>`<div class="res">${a.map(r=>`<div class="${r[2]||''}"><small>${r[0]}</small><b>${r[1]}</b></div>`).join('')}</div>`;
+const legend=a=>`<p class="legend">${a.map(l=>`<span><i style="background:var(--${l[0]})"></i>${l[1]}</span>`).join('')}</p>`;
+
+/* matemática */
+const erf=x=>{const s=x<0?-1:1;x=Math.abs(x);const t=1/(1+.3275911*x);return s*(1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x))};
+const Phi=z=>.5*(1+erf(z/Math.SQRT2));
+const npdf=(x,m=0,s=1)=>Math.exp(-.5*((x-m)/s)**2)/(s*Math.sqrt(2*Math.PI));
+const bisect=(f,a,b)=>{for(let i=0;i<60;i++){const m=(a+b)/2;f(m)>0?b=m:a=m}return (a+b)/2};
+const invPhi=p=>bisect(z=>Phi(z)-p,-8,8);
+const lgam=x=>{const c=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,.001208650973866179,-.000005395239384953];let y=x,t=x+5.5;t-=(x+.5)*Math.log(t);let s=1.000000000190015;for(const k of c)s+=k/++y;return -t+Math.log(2.5066282746310005*s/x)};
+const tpdf=(t,v)=>Math.exp(lgam((v+1)/2)-lgam(v/2))/Math.sqrt(v*Math.PI)*(1+t*t/v)**(-(v+1)/2);
+const tcdf=(t,v)=>{const n=400,h=Math.abs(t)/n;let s=tpdf(0,v)+tpdf(Math.abs(t),v);for(let i=1;i<n;i++)s+=(i%2?4:2)*tpdf(i*h,v);const a=s*h/3;return t>=0?.5+a:.5-a};
+const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const gauss=r=>Math.sqrt(-2*Math.log(r()||1e-9))*Math.cos(2*Math.PI*r());
+const mean=a=>a.reduce((s,x)=>s+x,0)/a.length;
+const sd=a=>{const m=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-m)**2,0)/(a.length-1))};
+const median=a=>{const s=[...a].sort((x,y)=>x-y),h=s.length>>1;return s.length%2?s[h]:(s[h-1]+s[h])/2};
+const comb=(n,k)=>{let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return r};
+
+/* gráfico SVG mínimo */
+function plot(o){
+  const Wd=Math.min(o.w||560,innerWidth<600?360:9999),H=o.h||260,tf=t=>String(t).replace('.',','),m={l:o.yl?52:40,r:14,t:14,b:o.xl?42:26};
+  const sx=v=>m.l+(v-o.x[0])/(o.x[1]-o.x[0])*(Wd-m.l-m.r),sy=v=>H-m.b-(v-o.y[0])/(o.y[1]-o.y[0])*(H-m.t-m.b);
+  let s='';
+  (o.yt||[]).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${Wd-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="mu" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${o.yf?o.yf(t):tf(t)}</text>`);
+  (o.xt||[]).forEach(t=>s+=`<text class="mu" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${o.xf?o.xf(t):tf(t)}</text>`);
+  s+=`<path class="ax" d="M${m.l} ${m.t}V${H-m.b}H${Wd-m.r}"/>`;
+  if(o.xl)s+=`<text class="mu" x="${(m.l+Wd-m.r)/2}" y="${H-6}" text-anchor="middle">${o.xl}</text>`;
+  if(o.yl)s+=`<text class="mu" transform="translate(13 ${(m.t+H-m.b)/2}) rotate(-90)" text-anchor="middle">${o.yl}</text>`;
+  const P={sx,sy,
+    path(pts,c){s+=`<path class="${c}" d="${pts.map((p,i)=>(i?'L':'M')+sx(p[0]).toFixed(1)+' '+sy(p[1]).toFixed(1)).join('')}"/>`;return P},
+    fn(f,c,a=o.x[0],b=o.x[1],n=120){return P.path(Array.from({length:n+1},(_,i)=>{const x=a+(b-a)*i/n;return[x,f(x)]}),c)},
+    area(f,c,a,b,n=80){const pts=Array.from({length:n+1},(_,i)=>{const x=a+(b-a)*i/n;return[x,f(x)]});s+=`<path class="${c}" d="M${sx(a)} ${sy(o.y[0])}${pts.map(p=>'L'+sx(p[0]).toFixed(1)+' '+sy(p[1]).toFixed(1)).join('')}L${sx(b)} ${sy(o.y[0])}Z"/>`;return P},
+    dot(x,y,c,r=5,t){s+=`<circle class="${c}" cx="${sx(x)}" cy="${sy(y)}" r="${r}">${t?`<title>${t}</title>`:''}</circle>`;return P},
+    seg(x1,y1,x2,y2,c){s+=`<line class="${c}" x1="${sx(x1)}" y1="${sy(y1)}" x2="${sx(x2)}" y2="${sy(y2)}"/>`;return P},
+    v(x,c,t){s+=`<line class="${c}" x1="${sx(x)}" x2="${sx(x)}" y1="${m.t}" y2="${H-m.b}"/>`;if(t)P.text(x,o.y[1],t,sx(x)>Wd*.7?'end':'start',sx(x)>Wd*.7?-6:6,10,'bd');return P},
+    bar(x,w,y,c,t){const y0=sy(Math.max(o.y[0],0)),y1=sy(y);s+=`<rect class="${c}" x="${sx(x-w/2)+1}" width="${Math.max(1,sx(x+w/2)-sx(x-w/2)-2)}" y="${Math.min(y0,y1)}" height="${Math.abs(y0-y1)}" rx="2">${t?`<title>${t}</title>`:''}</rect>`;return P},
+    text(x,y,t,anc='start',dx=0,dy=0,c=''){s+=`<text class="${c}" x="${sx(x)+dx}" y="${sy(y)+dy}" text-anchor="${anc}">${t}</text>`;return P},
+    raw(t){s+=t;return P},
+    svg(aria){return `<svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="${aria}">${s}</svg>`}};
+  return P;
+}
+
+/* controles: [id, etiqueta, min, max, paso, valor, formato, 'n' si es numérico] */
+function ui(el,title,ctrls,draw,tag,after){
+  el.innerHTML=box(title,`<div class="fields">${ctrls.map(c=>c[7]==='n'?`<label><span>${c[1]}</span><input type="number" data-s="${c[0]}" min="${c[2]}" max="${c[3]}" step="${c[4]}" value="${c[5]}"></label>`:`<label><span>${c[1]}: <b data-o="${c[0]}"></b></span><input type="range" data-s="${c[0]}" min="${c[2]}" max="${c[3]}" step="${c[4]}" value="${c[5]}"></label>`).join('')}</div><div data-out aria-live="off"></div>`,tag);
+  const out=$('[data-out]',el);
+  const run=()=>{const v={};ctrls.forEach(c=>{const inp=$(`[data-s="${c[0]}"]`,el);let x=parseFloat(inp.value);if(!isFinite(x))x=c[5];x=Math.min(c[3],Math.max(c[2],x));v[c[0]]=x;const o=$(`[data-o="${c[0]}"]`,el);if(o)o.textContent=c[6]?c[6](x):fmt(x,((c[4]+'').split('.')[1]||'').length)});out.innerHTML=draw(v);after&&after(el,run)};
+  $$('input',el).forEach(i=>i.oninput=run);run();return run;
+}
+
+/* juego de clasificar */
+function sorter(el,title,cats,items){
+  let i=0,ok=0,order=shuffle(items);
+  const draw=()=>{
+    if(i>=order.length){
+      el.innerHTML=box(title,`<p class="big">${ok} de ${order.length} correctas</p><button class="btn" data-r>Jugar de nuevo</button>`,'Práctica');
+      $('[data-r]',el).onclick=()=>{i=0;ok=0;order=shuffle(items);draw()};return}
+    const it=order[i];
+    el.innerHTML=box(`${title} <span class="count">${i+1} de ${order.length}</span>`,`<p class="stmt">${it[0]}</p><div class="opts">${cats.map((c,k)=>`<button class="btn ghost" data-k="${k}">${c}</button>`).join('')}</div><p class="fb" aria-live="polite"></p>`,'Práctica');
+    $$('[data-k]',el).forEach(b=>b.onclick=()=>{
+      const good=+b.dataset.k===it[1]; if(good)ok++;
+      $$('[data-k]',el).forEach(x=>{x.disabled=true;if(+x.dataset.k===it[1])x.classList.add('right')});
+      if(!good)b.classList.add('wrong');
+      $('.fb',el).innerHTML=`<strong>${good?'Correcto.':'No.'}</strong> ${it[2]||''} <button class="btn sm" data-n>${i+1<order.length?'Siguiente':'Ver resultado'}</button>`;
+      $('[data-n]',el).onclick=()=>{i++;draw()};
+    });
+  };draw();
+}
+function qCard(q,idx,onAns){
+  const d=document.createElement('div');d.className='q';
+  d.innerHTML=`<p class="q-t"><span class="q-n">${idx}</span><span>${q.q}</span></p><div class="q-o">${q.o.map((o,k)=>`<button data-k="${k}">${o}</button>`).join('')}</div><p class="fb" aria-live="polite"></p>`;
+  $$('.q-o button',d).forEach(b=>b.onclick=()=>{
+    const good=+b.dataset.k===q.a;
+    $$('.q-o button',d).forEach(x=>{x.disabled=true;if(+x.dataset.k===q.a)x.classList.add('right')});
+    if(!good)b.classList.add('wrong');
+    $('.fb',d).innerHTML=`<strong>${good?'Correcto.':'Incorrecto.'}</strong> ${q.e}`;
+    onAns&&onAns(good,d);
+  });
+  return d;
+}
+function picker(el,title,items,cls='seg',extra=''){
+  el.innerHTML=box(title,`<div class="${cls}">${items.map((it,i)=>`<button data-i="${i}" aria-pressed="${i===0}">${it.b}</button>`).join('')}</div>${extra}<div class="detail" aria-live="polite"></div>`);
+  const show=i=>{$$('[data-i]',el).forEach(b=>b.setAttribute('aria-pressed',+b.dataset.i===i));$('.detail',el).innerHTML=typeof items[i].d==='function'?items[i].d():items[i].d};
+  $$('[data-i]',el).forEach(b=>b.onclick=()=>show(+b.dataset.i));show(0);
+}
+let ticks=[];
+function timer(el,secs){
+  let left=secs,id=null;
+  const mmss=()=>`${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;
+  el.innerHTML=`<div class="row"><span class="clock">${mmss()}</span><button class="btn acc" data-go>Empezar</button><button class="btn ghost" data-re>Reiniciar</button></div>`;
+  const clock=$('.clock',el),go=$('[data-go]',el);
+  const stop=()=>{clearInterval(id);id=null;go.textContent=left===secs?'Empezar':'Seguir'};
+  go.onclick=()=>{ if(id){stop();return} if(left===0)return;
+    go.textContent='Pausar';
+    id=setInterval(()=>{left--;clock.textContent=mmss(); if(left<=0){stop();clock.classList.add('end');go.textContent='Tiempo'}},1000); ticks.push(id)};
+  $('[data-re]',el).onclick=()=>{stop();left=secs;clock.textContent=mmss();clock.classList.remove('end');go.textContent='Empezar'};
+}
+
+/* modelo de clasificador para los gráficos de umbral: puntajes de negativos ~N(.35,.15) y de positivos ~N(.62,.15) */
+const CL={mn:.35,mp:.62,s:.15,N:1000};
+const clf=(t,prev)=>{const tpr=1-Phi((t-CL.mp)/CL.s),fpr=1-Phi((t-CL.mn)/CL.s),P=Math.round(CL.N*prev),Ng=CL.N-P,VP=Math.round(P*tpr),FP=Math.round(Ng*fpr);return{tpr,fpr,VP,FN:P-VP,FP,VN:Ng-FP}};
+const metrics=({VP,FP,FN,VN})=>{const n=VP+FP+FN+VN,pr=VP/(VP+FP),re=VP/(VP+FN),sp=VN/(VN+FP);return{acc:(VP+VN)/n,pr,re,sp,f1:2*pr*re/(pr+re),j:re+sp-1}};
+const cmHTML=c=>`<div class="cm"><div></div><div class="h">Predijo negativo</div><div class="h">Predijo positivo</div><div class="h">Real negativo</div><div class="ok"><b>${c.VN}</b>VN · acierto</div><div class="ko"><b>${c.FP}</b>FP · falsa alarma</div><div class="h">Real positivo</div><div class="ko"><b>${c.FN}</b>FN · omisión</div><div class="ok"><b>${c.VP}</b>VP · acierto</div></div>`;
+const metHTML=m=>res([['Accuracy',pct(m.acc)],['Precision',pct(m.pr)],['Recall (sensibilidad)',pct(m.re)],['Especificidad',pct(m.sp)],['F1',isFinite(m.f1)?fmt(m.f1):'—'],['Youden J',fmt(m.j)]]);
+
+const WIDGETS={
+umbral:el=>ui(el,'Mové el umbral y mirá cómo cambian los errores',[['t','Umbral de decisión',.05,.95,.01,.5],['prev','Positivos reales (prevalencia)',.02,.5,.01,.2,x=>pct(x,0)]],v=>{
+  const c=clf(v.t,v.prev),m=metrics(c),ym=Math.max(v.prev,1-v.prev)*npdf(0,0,CL.s)*1.08;
+  const g=plot({x:[0,1],y:[0,ym],xt:[0,.25,.5,.75,1],xl:'Probabilidad que estima el modelo',h:250,w:420});
+  g.area(x=>(1-v.prev)*npdf(x,CL.mn,CL.s),'a1',0,1).fn(x=>(1-v.prev)*npdf(x,CL.mn,CL.s),'l1').area(x=>v.prev*npdf(x,CL.mp,CL.s),'a2',0,1).fn(x=>v.prev*npdf(x,CL.mp,CL.s),'l2').v(v.t,'th','umbral '+fmt(v.t));
+  const r=plot({x:[0,1],y:[0,1],xt:[0,.5,1],yt:[0,.5,1],xl:'FPR = 1 − especificidad',yl:'TPR = recall',h:250,w:300});
+  r.path([[0,0],[1,1]],'lm').path(Array.from({length:99},(_,i)=>{return[1-Phi((1-i/98-CL.mn)/CL.s),1-Phi((1-i/98-CL.mp)/CL.s)]}),'l1').dot(c.fpr,c.tpr,'dk',6,'Umbral actual').text(.55,.42,'azar','start',0,0,'mu');
+  const best=(CL.mn+CL.mp)/2;
+  return `<div class="duo"><div>${legend([['s1','Negativos reales'],['s2','Positivos reales']])}${g.svg('Distribución de puntajes de negativos y positivos con el umbral')}</div><div>${r.svg('Curva ROC con el punto del umbral actual')}</div></div>
+  <p style="font-size:.9rem;margin:.2rem 0">A la derecha del umbral el modelo predice <b>positivo</b>. Sobre 1.000 casos:</p>${cmHTML(c)}${metHTML(m)}
+  <p class="verdict">${m.re<.5?'Con este umbral se escapan más de la mitad de los positivos (muchos FN).':m.pr<.5?'Detectás casi todo, pero más de la mitad de tus alertas son falsas alarmas (muchos FP).':'Equilibrio razonable entre omisiones y falsas alarmas.'} ${v.prev<=.08?`Con solo ${pct(v.prev,0)} de positivos, predecir siempre "negativo" daría ${pct(1-v.prev,0)} de accuracy sin detectar nada.`:''} El índice de Youden es máximo cerca de ${fmt(best)}.</p>`}),
+matriz:el=>ui(el,'Calculadora de métricas: cargá tu matriz',[['VP','Verdaderos positivos (VP)',0,1e6,1,15,0,'n'],['FP','Falsos positivos (FP)',0,1e6,1,10,0,'n'],['FN','Falsos negativos (FN)',0,1e6,1,5,0,'n'],['VN','Verdaderos negativos (VN)',0,1e6,1,70,0,'n']],v=>{const m=metrics(v);return cmHTML(v)+metHTML(m)+`<p style="font-size:.9rem">Recall = ${v.VP} / (${v.VP} + ${v.FN}) · Precision = ${v.VP} / (${v.VP} + ${v.FP}) · Especificidad = ${v.VN} / (${v.VN} + ${v.FP}) · FPR = ${pct(1-m.sp)}</p>`},'Calculadora'),
+sigmoide:el=>ui(el,'La función sigmoide convierte z en probabilidad',[['b0','Intercepto β₀',-6,6,.5,0],['b1','Pendiente β₁',-3,3,.1,1],['x','Valor de x',-6,6,.1,0]],v=>{
+  const p=x=>1/(1+Math.exp(-(v.b0+v.b1*x))),z=v.b0+v.b1*v.x,pp=p(v.x);
+  const g=plot({x:[-6,6],y:[0,1],xt:[-6,-3,0,3,6],yt:[0,.5,1],xl:'x',yl:'p = P(Y = 1)',h:240});
+  g.path([[-6,.5],[6,.5]],'lm').fn(p,'l1').seg(v.x,0,v.x,pp,'lm').dot(v.x,pp,'dk',6);
+  return g.svg('Curva sigmoide con el punto elegido')+res([['z = β₀ + β₁x',fmt(z)],['Probabilidad p',fmt(pp,3)],['Odds p/(1−p)',fmt(pp/(1-pp))],['Odds Ratio e^β₁',fmt(Math.exp(v.b1))],['Pendiente aquí β₁·p(1−p)',fmt(v.b1*pp*(1-pp),3)]])+`<p class="verdict">Con umbral 0,5 se clasifica como <b>${pp>=.5?'positivo':'negativo'}</b>. La curva cambia más rápido cuando p = 0,5 (pendiente β₁/4 = ${fmt(v.b1/4,3)}) y casi nada en los extremos.</p>`}),
+odds:el=>ui(el,'De probabilidad a odds y a logit',[['p','Probabilidad p',.01,.99,.01,.75]],v=>{const o=v.p/(1-v.p);return res([['Probabilidad',pct(v.p,0)],['Odds = p/(1−p)',fmt(o)],['Logit = ln(odds)',fmt(Math.log(o))]])+`<p class="verdict">${o>=1?`El evento es ${fmt(o,1)} veces más probable que su ausencia (${fmt(o,1)} a 1).`:`Por cada vez que ocurre, no ocurre ${fmt(1/o,1)} veces.`} ${Math.abs(v.p-.5)<.006?'Con p = 0,5 las odds valen 1 y el logit vale 0.':''}</p>`}),
+recta:el=>{const X=[1,2,3,4,5,6,7,8],Y=[3.5,4,5.5,5,7,7.5,8,9.5],mx=mean(X),my=mean(Y),b=X.reduce((s,x,i)=>s+(x-mx)*(Y[i]-my),0)/X.reduce((s,x)=>s+(x-mx)**2,0),a=my-b*mx,sse=(a,b)=>X.reduce((s,x,i)=>s+(Y[i]-a-b*x)**2,0),sst=Y.reduce((s,y)=>s+(y-my)**2,0);
+  ui(el,'Ajustá la recta a mano y comparala con mínimos cuadrados',[['a','Intercepto β₀',0,6,.1,4.5],['b','Pendiente β₁',0,1.5,.05,.4]],v=>{
+  const g=plot({x:[0,9],y:[0,11],xt:[0,2,4,6,8],yt:[0,5,10],xl:'Horas de estudio',yl:'Nota',h:260});
+  X.forEach((x,i)=>g.seg(x,Y[i],x,v.a+v.b*x,'rs'));g.path([[0,v.a],[9,v.a+9*v.b]],'l1').path([[0,a],[9,a+9*b]],'lm');X.forEach((x,i)=>g.dot(x,Y[i],'dk',5,`Residuo: ${fmt(Y[i]-v.a-v.b*x)}`));
+  const s=sse(v.a,v.b);
+  return legend([['s1','Tu recta'],['muted','Recta de mínimos cuadrados'],['s2','Residuos (y − ŷ)']])+g.svg('Dispersión de horas de estudio y nota con recta ajustable')+res([['Tu ecuación',`ŷ = ${fmt(v.a,1)} + ${fmt(v.b)}x`],['Tu suma de residuos²',fmt(s)],['Mínimo posible (OLS)',fmt(sse(a,b))],['Tu R² = 1 − SSE/SST',fmt(1-s/sst)]])+`<p class="verdict">OLS elige ŷ = ${fmt(a)} + ${fmt(b)}x: por cada hora extra, la nota predicha sube ${fmt(b)} puntos. Ninguna otra recta tiene una suma de residuos al cuadrado menor.${1-s/sst<0?' Tu R² es negativo: tu recta predice peor que usar siempre el promedio.':''}</p>`})},
+atipico:el=>{const base=[22,25,27,28,30,31,33];
+  ui(el,'Un solo valor extremo: qué se rompe y qué resiste',[['x','Valor del dato extremo',34,300,1,34]],v=>{
+  const d=[...base,v.x],m=mean(d),me=median(d),s=sd(d),mn=22,q=[...d].sort((a,b)=>a-b),iqr=q[5]-q[2];
+  const g=plot({x:[0,1],y:[0,1],xt:[0,.25,.5,.75,1],h:90,xl:'Valores después de MinMaxScaler (0 a 1)'});d.forEach((x,i)=>g.dot((x-mn)/(v.x-mn),.5,i<7?'d1':'d2',6,`${x}`));
+  return res([['Media',fmt(m,1)],['Mediana',fmt(me,1)],['Desviación estándar',fmt(s,1)],['z del dato extremo',fmt((v.x-m)/s)],['Rango intercuartílico',fmt(iqr,1)]])+g.svg('Posición de los datos escalados entre 0 y 1')+`<p class="verdict">${v.x>80?'La media y la desviación estándar se dispararon; la mediana y el rango intercuartílico casi no se movieron. Con MinMax, los siete datos normales quedaron aplastados cerca de 0.':'Sin valores extremos, media y mediana coinciden y los datos escalados se reparten bien entre 0 y 1.'} Por eso se imputa con mediana en distribuciones asimétricas y se usa RobustScaler (mediana e IQR) cuando hay outliers.</p>`})},
+errores:el=>ui(el,'MAE contra RMSE frente a un error grande',[['e','Tamaño del sexto error',0,40,1,3]],v=>{const e=[2,3,2,4,3,v.e],mae=mean(e),mse=mean(e.map(x=>x*x));
+  const g=plot({x:[.4,6.6],y:[0,40],xt:[1,2,3,4,5,6],yt:[0,20,40],xl:'Predicción',yl:'|error|',h:190});e.forEach((x,i)=>g.bar(i+1,.6,x,i<5?'b1':'b2',`|error| = ${x}`));
+  return g.svg('Errores absolutos de seis predicciones')+res([['MAE',fmt(mae)],['MSE',fmt(mse)],['RMSE = √MSE',fmt(Math.sqrt(mse))]])+`<p class="verdict">${v.e>12?`El RMSE (${fmt(Math.sqrt(mse),1)}) quedó muy por encima del MAE (${fmt(mae,1)}): elevar al cuadrado hace que un solo error grande domine.`:'Con errores parecidos, MAE y RMSE dan casi lo mismo.'} MAE y RMSE están en las unidades del target; MSE, en unidades al cuadrado.</p>`}),
+kfold:el=>ui(el,'Validación cruzada K-Fold paso a paso',[['k','Cantidad de bloques (K)',3,10,1,5],['i','Iteración',1,10,1,1]],v=>{const i=Math.min(v.i,v.k);
+  return `<div class="folds" style="--k:${v.k}">${Array.from({length:v.k},(_,r)=>`<div class="${r+1===i?'cur':''}"><b>Vuelta ${r+1}</b>${Array.from({length:v.k},(_,c)=>`<span class="${c===r?'v':''}">${c===r?'Valida':'Entrena'}</span>`).join('')}</div>`).join('')}</div><p class="verdict">Vuelta ${i} de ${v.k}: se entrena con ${v.k-1} bloques (${pct((v.k-1)/v.k,0)} de los datos) y se valida con el bloque ${i}. Al final se promedian las ${v.k} métricas: cada dato se usó una vez para validar, por eso la estimación depende menos de la suerte de una sola partición.</p>`}),
+ciclo:el=>ui(el,'La hora como un círculo: seno y coseno',[['h','Hora del día',0,23,1,23]],v=>{const a=2*Math.PI*v.h/24,s=Math.sin(a),c=Math.cos(a),cx=130,cy=120,R=90,pt=h=>[cx+R*Math.sin(2*Math.PI*h/24),cy-R*Math.cos(2*Math.PI*h/24)];
+  const d=Math.hypot(Math.sin(2*Math.PI*23/24)-Math.sin(2*Math.PI/24),Math.cos(2*Math.PI*23/24)-Math.cos(2*Math.PI/24));
+  return `<div class="g2" style="align-items:center"><svg viewBox="0 0 260 240" role="img" aria-label="Reloj de 24 horas con la hora elegida"><circle cx="${cx}" cy="${cy}" r="${R}" class="ax"/>${[0,6,12,18].map(h=>{const p=pt(h);return `<text class="mu" x="${cx+(p[0]-cx)*1.18}" y="${cy+(p[1]-cy)*1.18+4}" text-anchor="middle">${h} h</text>`}).join('')}${Array.from({length:24},(_,h)=>{const p=pt(h);return `<circle cx="${p[0]}" cy="${p[1]}" r="2.5" class="bm"/>`}).join('')}<line class="l1" x1="${cx}" y1="${cy}" x2="${pt(v.h)[0]}" y2="${pt(v.h)[1]}"/><circle class="dk" cx="${pt(v.h)[0]}" cy="${pt(v.h)[1]}" r="7"/></svg><div>${res([['hora_seno',fmt(s,3)],['hora_coseno',fmt(c,3)]])}<p class="verdict">Como número, las 23 y la 1 están a 22 de distancia. En el círculo están a solo ${fmt(d)}: el modelo entiende que son horas vecinas.</p></div></div>`}),
+ajuste:el=>ui(el,'Complejidad del modelo: subajuste y sobreajuste',[['c','Complejidad del modelo',1,10,.5,1]],v=>{const tr=c=>9*Math.exp(-.45*c)+.3,te=c=>tr(c)+.07*Math.max(0,c-1)**2.1+.6;
+  const g=plot({x:[1,10],y:[0,10],xt:[1,4,7,10],yt:[0,5,10],xl:'Complejidad del modelo',yl:'Error',h:250});
+  g.fn(tr,'l1').fn(te,'l2').v(v.c,'th').dot(v.c,tr(v.c),'d1',6).dot(v.c,te(v.c),'d2',6).text(9.9,tr(10),'entrenamiento','end',0,-8).text(9.9,te(10),'prueba','end',0,-10);
+  const gap=te(v.c)-tr(v.c),st=v.c<3?['Subajuste (alto sesgo)','El error es alto en entrenamiento y en prueba: el modelo es demasiado simple. Solución: más variables o un modelo más flexible.']:v.c<=5.5?['Buen equilibrio','El error de prueba está cerca de su mínimo y la brecha con entrenamiento es chica: el modelo generaliza.']:['Sobreajuste (alta varianza)','El error de entrenamiento es muy bajo pero el de prueba sube: el modelo memorizó el ruido. Solución: regularizar, simplificar o conseguir más datos.'];
+  return legend([['s1','Error de entrenamiento'],['s2','Error de prueba']])+g.svg('Error de entrenamiento y de prueba según la complejidad')+res([['Error en entrenamiento',fmt(tr(v.c),1)],['Error en prueba',fmt(te(v.c),1)],['Brecha',fmt(gap,1)]])+`<p class="verdict"><b>${st[0]}.</b> ${st[1]}</p>`}),
+costo:el=>ui(el,'Del umbral al dinero: el marco del valor esperado',[['t','Umbral de decisión',.05,.95,.01,.5],['fn','Costo de cada omisión (FN), $',0,1000,10,500,x=>'$ '+fmt(x,0)],['fp','Costo de cada falsa alarma (FP), $',0,300,5,50,x=>'$ '+fmt(x,0)]],v=>{
+  const cost=t=>{const c=clf(t,.1);return c.FN*v.fn+c.FP*v.fp};let bt=.05,bc=1e18;for(let t=.05;t<=.951;t+=.01){const c=cost(t);if(c<bc){bc=c;bt=t}}
+  const mx=Math.max(cost(.05),cost(.95),1),g=plot({x:[.05,.95],y:[0,mx*1.08],xt:[.1,.3,.5,.7,.9],xl:'Umbral de decisión',yl:'Costo total',h:230});
+  g.fn(cost,'l1',.05,.95,90).v(v.t,'th').dot(v.t,cost(v.t),'dk',6).dot(bt,bc,'d2',6,'Umbral de menor costo');
+  const c=clf(v.t,.1);
+  return g.svg('Costo total según el umbral')+res([['Omisiones (FN)',c.FN],['Falsas alarmas (FP)',c.FP],['Costo con tu umbral','$ '+fmt(cost(v.t),0)],['Umbral más barato',fmt(bt)],['Costo mínimo','$ '+fmt(bc,0)]])+`<p class="verdict">Sobre 1.000 casos con 10 % de positivos. ${v.fn>v.fp*3?'Como omitir un caso cuesta mucho más que una falsa alarma, conviene un umbral bajo: se prioriza el Recall.':v.fp>v.fn?'Como la falsa alarma es más cara, conviene un umbral alto: se prioriza la Precision.':'Con costos parecidos, el umbral óptimo se acerca al centro.'} El mejor umbral no es 0,5 por defecto: lo deciden los costos del negocio.</p>`}),
+kmeans:el=>{const r=rng(7),pts=[[2.5,7.5],[7,7],[5,2.5]].flatMap(c=>Array.from({length:12},()=>[c[0]+gauss(r)*.9,c[1]+gauss(r)*.9]));let cen,asg,step;
+  const reset=()=>{cen=[[1,1],[2,2.5],[9,9.5]];asg=pts.map(()=>-1);step=0;draw()};
+  const draw=()=>{const g=plot({x:[0,10],y:[0,10],xt:[0,5,10],yt:[0,5,10],h:280,w:420});
+    pts.forEach((p,i)=>g.dot(p[0],p[1],asg[i]<0?'bm':'d'+(asg[i]+1),5));
+    cen.forEach((c,k)=>g.raw(`<path d="M${g.sx(c[0])-8} ${g.sy(c[1])-8}l16 16m0-16l-16 16" style="stroke:var(--ink);stroke-width:4;fill:none"/>`).text(c[0],c[1],'C'+(k+1),'start',11,-9,'bd'));
+    const inert=asg[0]<0?null:pts.reduce((s,p,i)=>s+(p[0]-cen[asg[i]][0])**2+(p[1]-cen[asg[i]][1])**2,0);
+    const msg=step===0?'<b>1. Inicialización.</b> Se ubican K = 3 centroides (las cruces) al azar.':step%2?'<b>2. Asignación.</b> Cada punto se pinta del color del centroide más cercano (distancia euclidiana).':'<b>3. Recálculo.</b> Cada centroide se mueve al promedio de sus puntos. Se repite hasta que nada cambie (convergencia).';
+    el.innerHTML=box('K-Means paso a paso',`<div class="g2" style="align-items:center"><div>${g.svg('Puntos y centroides de K-Means')}</div><div><p>${msg}</p>${res([['Paso',step],['Inercia',inert===null?'—':fmt(inert,1)]])}<div class="row"><button class="btn acc" data-n>Siguiente paso</button><button class="btn ghost" data-r>Reiniciar</button></div><p style="font-size:.88rem;color:var(--muted)">La inercia es la suma de distancias al cuadrado de cada punto a su centroide: baja en cada vuelta.</p></div></div>`);
+    $('[data-n]',el).onclick=()=>{step++;if(step%2){asg=pts.map(p=>{let b=0,bd=1e9;cen.forEach((c,k)=>{const d=(p[0]-c[0])**2+(p[1]-c[1])**2;if(d<bd){bd=d;b=k}});return b})}else{cen=cen.map((c,k)=>{const m=pts.filter((_,i)=>asg[i]===k);return m.length?[mean(m.map(p=>p[0])),mean(m.map(p=>p[1]))]:c})}draw()};
+    $('[data-r]',el).onclick=reset};reset()},
+
+/* estadística */
+tlc:el=>{let seed=1;ui(el,'Teorema Central del Límite en acción',[['n','Tamaño de cada muestra (n)',1,60,1,1]],v=>{
+  const r=rng(seed*977+v.n),M=3000,bins=Array(40).fill(0),ms=[];for(let i=0;i<M;i++){let s=0;for(let j=0;j<v.n;j++)s+=-Math.log(1-r());const m=s/v.n;ms.push(m);const b=Math.floor(m/3*40);if(b<40)bins[b]++}
+  const dens=bins.map(c=>c/M/(3/40)),ym=Math.max(...dens)*1.1,g=plot({x:[0,3],y:[0,ym],xt:[0,1,2,3],xl:'Media de la muestra (x̄)',h:240});
+  dens.forEach((d,i)=>g.bar((i+.5)*3/40,3/40,d,'b1'));if(v.n>1)g.fn(x=>npdf(x,1,1/Math.sqrt(v.n)),'l2');g.v(1,'lm','μ = 1');
+  return legend([['s1','3.000 medias muestrales simuladas'],['s2','Normal(μ, σ/√n)']])+g.svg('Histograma de medias muestrales')+res([['Error estándar teórico σ/√n',fmt(1/Math.sqrt(v.n),3)],['Desvío de las medias simuladas',fmt(sd(ms),3)]])+`<p class="verdict">${v.n===1?'Con n = 1 ves la población original: muy asimétrica (exponencial), nada parecida a una normal.':v.n<15?'Las medias ya se agrupan alrededor de μ, pero todavía se nota la asimetría.':'Con n grande, las medias se distribuyen casi como una normal aunque la población original no lo sea, y cada vez más concentradas alrededor de μ.'}</p><button class="btn ghost sm" data-new>Simular de nuevo</button>`},'Simulación',(el,run)=>{$('[data-new]',el).onclick=()=>{seed++;run()}})},
+ic:el=>{let seed=3;ui(el,'Cincuenta intervalos de confianza para la misma media',[['n','Tamaño de muestra (n)',5,200,5,25],['c','Nivel de confianza',.8,.99,.01,.95,x=>pct(x,0)]],v=>{
+  const r=rng(seed*31+7),z=invPhi(1-(1-v.c)/2),se=10/Math.sqrt(v.n),g=plot({x:[0,51],y:[38,62],yt:[40,50,60],xl:'Cada línea es el intervalo de una muestra distinta',h:240});let miss=0;
+  g.path([[0,50],[51,50]],'lm');
+  for(let i=1;i<=50;i++){const m=50+gauss(r)*se,bad=Math.abs(m-50)>z*se;if(bad)miss++;g.seg(i,m-z*se,i,m+z*se,bad?'l2':'l1').dot(i,m,bad?'d2':'d1',2.5)}
+  return legend([['s1','Contiene a μ = 50'],['s2','No lo contiene']])+g.svg('Cincuenta intervalos de confianza simulados')+res([['Error estándar σ/√n',fmt(se)],['Valor crítico z',fmt(z)],['Margen de error',fmt(z*se)],['Intervalos que fallan',`${miss} de 50`]])+`<p class="verdict">El parámetro μ no se mueve: lo que cambia es cada intervalo. A la larga, cerca del ${pct(v.c,0)} lo contienen. Más confianza ensancha el intervalo; más n lo angosta (para la mitad de margen hace falta 4 veces más muestra).</p><button class="btn ghost sm" data-new>Tomar otras 50 muestras</button>`},'Simulación',(el,run)=>{$('[data-new]',el).onclick=()=>{seed++;run()}})},
+tz:el=>ui(el,'t de Student contra la normal Z',[['v','Grados de libertad (n − 1)',1,40,1,3]],v=>{const tc=bisect(t=>tcdf(t,v.v)-.975,0,80);
+  const g=plot({x:[-5,5],y:[0,.42],xt:[-4,-2,0,2,4],h:230});g.fn(x=>npdf(x),'l1').fn(x=>tpdf(x,v.v),'l2');
+  return legend([['s1','Normal estándar Z'],['s2',`t con ${v.v} grados de libertad`]])+g.svg('Densidades de la normal y de la t de Student')+res([['Valor crítico 95 % con Z','1,96'],['Valor crítico 95 % con t',fmt(tc)]])+`<p class="verdict">${v.v<10?'Con pocos datos la t tiene colas más pesadas: exige un valor crítico mayor y da intervalos más anchos, porque además de μ estamos estimando σ con s.':v.v<30?'Al crecer n, la t se va pegando a la normal.':'Con muchos grados de libertad, t y Z son casi idénticas.'}</p>`}),
+tstat:el=>ui(el,'El estadístico t: señal sobre ruido',[['x','Media muestral x̄',-1e6,1e6,.1,52,0,'n'],['m','Valor de H₀ (μ₀)',-1e6,1e6,.1,50,0,'n'],['s','Desvío muestral s',.01,1e6,.1,10,0,'n'],['n','Tamaño n',2,1e6,1,100,0,'n']],v=>{const se=v.s/Math.sqrt(v.n),t=(v.x-v.m)/se,p=2*(1-tcdf(Math.abs(t),v.n-1));
+  return res([['Señal: x̄ − μ₀',fmt(v.x-v.m)],['Ruido: EE = s/√n',fmt(se,3)],['t = señal / ruido',fmt(t)],['p-valor (dos colas)',p<.0001?'< 0,0001':fmt(p,4)],['Decisión con α = 0,05',p<=.05?'Se rechaza H₀':'No se rechaza H₀',p<=.05?'no':'ok']])+`<p class="verdict">La diferencia observada equivale a ${fmt(Math.abs(t))} errores estándar. ${p<=.05?'Es poco compatible con H₀.':'Es compatible con el azar del muestreo: no hay evidencia suficiente contra H₀ (eso no prueba que H₀ sea verdadera).'} Probá subir n: el mismo efecto se vuelve "significativo" solo porque baja el ruido.</p>`},'Calculadora'),
+fwer:el=>ui(el,'La trampa de la multiplicidad',[['k','Cantidad de grupos a comparar',2,10,1,3]],v=>{const m=v.k*(v.k-1)/2,f=1-.95**m;
+  return res([['Pruebas t de a pares',m],['Riesgo en cada prueba','5 %'],['Riesgo de al menos un falso positivo',pct(f)]])+`<div class="meter"><i style="width:${f*100}%"></i></div><p class="verdict">Error familiar = 1 − (1 − 0,05)<sup>${m}</sup>. ${v.k>=5?'Con tantos pares es probable "encontrar" una diferencia que no existe.':'Ya con tres grupos el riesgo real pasa del 5 % al 14 %.'} Por eso se hace primero un único ANOVA y, solo si es significativo, Tukey HSD.</p>`}),
+anova:el=>{const zs=[-1.4,-.8,-.4,-.1,.1,.4,.8,1.4];ui(el,'ANOVA: variación entre grupos contra variación dentro',[['d','Separación entre las medias',0,6,.25,1],['s','Dispersión dentro de cada grupo',.5,5,.25,2]],v=>{
+  const gs=[10-v.d,10,10+v.d].map(m=>zs.map(z=>m+z*v.s)),all=gs.flat(),gm=mean(all),msb=gs.reduce((a,g)=>a+8*(mean(g)-gm)**2,0)/2,msw=gs.reduce((a,g)=>a+g.reduce((b,x)=>b+(x-mean(g))**2,0),0)/21,Fv=msb/msw;
+  const g=plot({x:[.4,3.6],y:[-2,22],xt:[1,2,3],xf:t=>'Grupo '+'ABC'[t-1],yt:[0,10,20],h:240});
+  gs.forEach((a,i)=>{a.forEach((x,j)=>g.dot(i+1+[-.06,.06,-.12,.12,0,-.06,.06,0][j],x,'d1',4.5));g.seg(i+.7,mean(a),i+1.3,mean(a),'l2')});
+  return legend([['s1','Observaciones'],['s2','Media de cada grupo']])+g.svg('Tres grupos con sus medias')+res([['Señal: MS entre grupos',fmt(msb,1)],['Ruido: MS dentro',fmt(msw,1)],['F = entre / dentro',fmt(Fv)],['F crítico (α = 0,05)','3,47'],['Decisión',Fv>3.47?'Al menos una media difiere':'No se rechaza H₀',Fv>3.47?'no':'ok']])+`<p class="verdict">${Fv>3.47?'Las medias están lejos en relación con el ruido interno. ANOVA dice que alguna difiere, pero no cuál: para eso está Tukey HSD.':'Las diferencias entre medias no superan al ruido interno de los grupos.'}</p>`})},
+corr:el=>{const r0=rng(11),zx=Array.from({length:60},()=>gauss(r0)),ze=Array.from({length:60},()=>gauss(r0));ui(el,'Qué aspecto tiene cada valor de r',[['r','Correlación de Pearson r',-1,1,.05,.8]],v=>{
+  const y=zx.map((x,i)=>v.r*x+Math.sqrt(1-v.r*v.r)*ze[i]),g=plot({x:[-3,3],y:[-3,3],xl:'X',yl:'Y',h:250,w:420});zx.forEach((x,i)=>g.dot(x,y[i],'d1',4));
+  const a=Math.abs(v.r);
+  return g.svg('Diagrama de dispersión')+res([['r',fmt(v.r)],['R² = r²',fmt(v.r*v.r)]])+`<p class="verdict">Asociación lineal ${a<.1?'prácticamente nula':(a<.4?'débil':a<.7?'moderada':'fuerte')+(v.r>0?' y positiva: cuando X sube, Y tiende a subir':' y negativa: cuando X sube, Y tiende a bajar')}. r mide solo relación <b>lineal</b> y no prueba causalidad.</p>`})},
+residuos:el=>{const mk=k=>{const r=rng(5),g=plot({x:[0,10],y:[-6,6],xt:[0,5,10],yt:[-5,0,5],xl:'Valor predicho ŷ',yl:'Residuo',h:230});g.path([[0,0],[10,0]],'lm');for(let i=0;i<70;i++){const x=.3+r()*9.4,e=gauss(r);g.dot(x,k===0?e*1.4:k===1?e*(.2+x*.38):(x-5)**2*.32-2.6+e*.7,'d1',4)}return g.svg('Gráfico de residuos contra valores predichos')};
+  picker(el,'Leer un gráfico de residuos',[{b:'Sin patrón',d:()=>mk(0)+'<p><b>Lo que se espera.</b> Nube sin forma, centrada en cero y con dispersión pareja: linealidad y homocedasticidad razonables.</p>'},{b:'Embudo',d:()=>mk(1)+'<p><b>Heterocedasticidad.</b> La dispersión crece con la predicción (forma de abanico). Los errores estándar y las pruebas clásicas dejan de ser confiables.</p>'},{b:'Curva',d:()=>mk(2)+'<p><b>No linealidad.</b> Los residuos dibujan una U: la recta no captura la forma real. Hace falta transformar o agregar un término no lineal.</p>'}])},
+qq:el=>{const mk=k=>{const n=40,g=plot({x:[-2.6,2.6],y:[-4,6],xt:[-2,0,2],yt:[-4,0,4],xl:'Cuantiles teóricos normales',yl:'Cuantiles observados',h:240,w:420});g.path([[-2.6,-2.6],[2.6,2.6]],'lm');for(let i=1;i<=n;i++){const p=(i-.5)/n,z=invPhi(p);g.dot(z,k===0?z+Math.sin(i*1.7)*.12:k===1?-Math.log(1-p)*1.5-1.5:z*Math.abs(z)**.75,'d1',4)}return g.svg('Gráfico Q-Q')};
+  picker(el,'Leer un Q-Q plot',[{b:'Normal',d:()=>mk(0)+'<p>Los puntos siguen la diagonal: los datos son compatibles con una normal.</p>'},{b:'Asimetría a la derecha',d:()=>mk(1)+'<p>Los puntos se curvan y se despegan hacia arriba en la cola derecha: hay asimetría positiva.</p>'},{b:'Colas pesadas',d:()=>mk(2)+'<p>Forma de S: los extremos se alejan de la recta en ambos lados. Hay más valores extremos de los que tendría una normal.</p>'}])},
+muestra:el=>ui(el,'Tamaño de muestra para estimar una proporción',[['p','Proporción supuesta p',.05,.95,.05,.5],['e','Margen de error deseado',.01,.1,.005,.03,x=>'± '+pct(x)]],v=>{const n=x=>1.96**2*x*(1-x)/v.e**2,g=plot({x:[0,1],y:[0,.27],xt:[0,.25,.5,.75,1],yt:[0,.25],xl:'p',yl:'p(1 − p)',h:200});
+  g.fn(x=>x*(1-x),'l1').seg(v.p,0,v.p,v.p*(1-v.p),'lm').dot(v.p,v.p*(1-v.p),'dk',6);
+  return g.svg('Curva de p por uno menos p')+res([['p(1 − p)',fmt(v.p*(1-v.p),4)],['n necesario (95 %)',fmt(Math.ceil(n(v.p)),0)],['n con p = 0,50',fmt(Math.ceil(n(.5)),0)]])+`<p class="verdict">n = z² · p(1 − p) / E². El producto p(1 − p) es máximo en p = 0,5 (vale 0,25): usarlo da el tamaño más grande, y por eso el más seguro, cuando no hay información previa.</p>`},'Calculadora'),
+binomial:el=>ui(el,'Distribución binomial',[['n','Ensayos (n)',1,30,1,10],['p','Probabilidad de éxito (p)',.05,.95,.05,.2],['k','Éxitos (k)',0,30,1,2]],v=>{const k=Math.min(v.k,v.n),pm=x=>comb(v.n,x)*v.p**x*(1-v.p)**(v.n-x),ps=Array.from({length:v.n+1},(_,x)=>pm(x)),cum=ps.slice(0,k+1).reduce((a,b)=>a+b,0);
+  const g=plot({x:[-.7,v.n+.7],y:[0,Math.max(...ps)*1.12],xt:v.n<=12?ps.map((_,i)=>i):[0,Math.round(v.n/2),v.n],xl:'Cantidad de éxitos',h:210});ps.forEach((q,x)=>g.bar(x,.8,q,x===k?'b2':'b1',`P(X = ${x}) = ${fmt(q,4)}`));
+  return g.svg('Probabilidades de la binomial')+res([[`P(X = ${k})`,fmt(ps[k],4)],[`P(X ≤ ${k}) a lo sumo`,fmt(cum,4)],[`P(X ≥ ${k}) al menos`,fmt(1-cum+ps[k],4)],['Esperanza n·p',fmt(v.n*v.p)],['Varianza n·p·(1−p)',fmt(v.n*v.p*(1-v.p))]])+`<p class="verdict">Arranca con el ejercicio de la práctica: 10 personas conectadas y cada una compra con probabilidad 0,20. "Al menos uno" se calcula más fácil como 1 − P(X = 0) = ${fmt(1-ps[0],4)}.</p>`},'Calculadora'),
+normal:el=>ui(el,'Probabilidades con la distribución normal',[['m','Media μ',-1e6,1e6,.1,70,0,'n'],['s','Desvío σ',.01,1e6,.1,12,0,'n'],['a','Desde (a)',-1e6,1e6,.1,65,0,'n'],['b','Hasta (b)',-1e6,1e6,.1,90,0,'n']],v=>{const a=Math.min(v.a,v.b),b=Math.max(v.a,v.b),za=(a-v.m)/v.s,zb=(b-v.m)/v.s,lo=v.m-4*v.s,hi=v.m+4*v.s;
+  const g=plot({x:[lo,hi],y:[0,npdf(0,0,v.s)*1.1],xt:[-3,-2,-1,0,1,2,3].map(k=>v.m+k*v.s),xf:t=>fmt(t,v.s<2?1:0),h:210});
+  g.area(x=>npdf(x,v.m,v.s),'a2',Math.max(lo,a),Math.min(hi,b)).fn(x=>npdf(x,v.m,v.s),'l1');
+  return g.svg('Curva normal con el área pedida sombreada')+res([['z de a',fmt(za)],['z de b',fmt(zb)],['P(a ≤ X ≤ b)',fmt(Phi(zb)-Phi(za),4)],['P(X ≤ b)',fmt(Phi(zb),4)],['P(X ≥ a)',fmt(1-Phi(za),4)]])+`<p class="verdict">Arranca con el ejercicio del examen: tiempo N(70; 12), entre 65 y 90 minutos. Se estandariza con z = (x − μ)/σ y se busca el área. Regla empírica: μ ± σ abarca el 68 %, μ ± 2σ el 95 % y μ ± 3σ el 99,7 %.</p>`},'Calculadora'),
+bayes:el=>ui(el,'Teorema de Bayes con frecuencias naturales',[['p','P(incidente)',.01,.5,.01,.1,x=>pct(x,0)],['s','P(suena | hay incidente)',.5,1,.01,.97,x=>pct(x,0)],['f','P(suena | no hay incidente)',0,.3,.01,.02,x=>pct(x,0)]],v=>{const N=1000,I=N*v.p,a=I*v.s,b=(N-I)*v.f;
+  return FLOW([[`${fmt(N,0)} días`,'total'],[`${fmt(I,0)} con incidente`,`suena en ${fmt(a,1)}`],[`${fmt(N-I,0)} sin incidente`,`suena en ${fmt(b,1)}`],[`${fmt(a+b,1)} alarmas`,'probabilidad total']],1)+res([['P(suena) · probabilidad total',fmt((a+b)/N,4)],['P(incidente | suena)',fmt(a/(a+b),4)],['P(no incidente | suena)',fmt(b/(a+b),4)]])+`<p class="verdict">Arranca con el ejercicio de la alarma de la práctica: de cada ${fmt(a+b,0)} veces que suena, ${fmt(b,0)} son sin incidente. Bayes "da vuelta" la condicional: de P(suena | incidente) a P(incidente | suena).</p>`},'Calculadora')
+};
+
+const SITE={key:'est2-estudio',name:'Estadística y Exploración de Datos II',sub:'Guía interactiva para el coloquio',secs:30,
+eyebrow:'ISPC · Tecnicatura en Ciencia de Datos e IA · Comisión B.1',
+h1:'Estadística II: de la muestra al modelo, en 19 temas',
+lead:'Cada tema explica la idea desde cero, trae una simulación o calculadora para verla funcionar, la frase para decir en el oral, las preguntas de la guía con su posible repregunta y un mini test.',
+exam:`<h2>Cómo es la guía del profesor</h2><div class="t"><b>47</b><span>preguntas conceptuales repartidas en <b>5 módulos</b>.</span></div><div class="t"><b>30 s</b><span>es el tiempo máximo pensado para <b>cada respuesta</b>: concisa y al punto.</span></div><p style="margin:.8rem 0 0;font-size:.93rem">Conviene repasar también los ejercicios hechos en clase. Los dos últimos temas son un repaso de probabilidad con las prácticas.</p>`,
+hilo:`<h2>El hilo que une la materia</h2><p style="max-width:70ch">La materia avanza de lo más simple a lo más aplicado, y cada módulo usa al anterior. La idea que se repite en todos es la misma: <b>comparar una señal con el ruido</b>.</p><div class="flow sm eje-2">${[['Muestra','estimo un parámetro',1],['Error estándar','mido el ruido',2],['Intervalo','doy un rango',3],['Hipótesis','¿señal o azar?',5],['ANOVA','varios grupos',8],['Regresión','explico Y con X',10],['Logística','predigo 0 / 1',13],['Evaluación','¿clasifica bien?',16]].map(f=>`<div><b><a href="#tema-${f[2]}" style="text-decoration:none">${f[0]}</a></b><span>${f[1]}</span></div>`).join('')}</div><p class="note" style="max-width:none"><b>La frase que ordena todo:</b> estadístico de prueba = señal / ruido. La señal es el efecto observado; el ruido es el error estándar. Vale para t, para F en ANOVA y para la prueba de Wald en logística.</p>`,
+unitsTitle:'Los cinco módulos y el repaso',glosEj:'Por ejemplo: p-valor',
+oralIntro:'Las 47 preguntas de la guía de autoevaluación del profesor. Sacá una, respondé en voz alta en 30 segundos sin leer y después compará con la respuesta modelo y la posible repregunta.',
+other:{name:'Ciencia de Datos II',url:'https://claude.ai/artifact/PyzGF61DcMPP96m1gHbBmV'},
+units:[null,
+ {n:'Módulo 1',t:'Distribuciones muestrales, estimación e inferencia',q:'¿Qué puedo decir de la población mirando una muestra?'},
+ {n:'Módulo 2',t:'Pruebas de hipótesis, normalidad, t-test y ANOVA',q:'¿La diferencia que veo es real o es azar?'},
+ {n:'Módulo 3',t:'Regresión y correlación lineal',q:'¿Cómo se relacionan dos variables y cuánto explica una a la otra?'},
+ {n:'Módulo 4',t:'Regresión logística',q:'¿Cómo modelo una respuesta de sí o no?'},
+ {n:'Módulo 5',t:'Evaluación de modelos, matriz de confusión y ROC-AUC',q:'¿Qué tan bien clasifica el modelo?'},
+ {n:'Repaso',t:'Probabilidad (prácticas de la Unidad II)',q:'La base: reglas de probabilidad, Bayes, binomial y normal.'}]};
+
+Object.assign(WIDGETS,{
+sortErr:el=>sorter(el,'¿Error de tipo I o de tipo II?',['Tipo I (falso positivo)','Tipo II (falso negativo)'],[
+ ['Concluir que un medicamento funciona cuando en realidad no hace nada.',0,'Se rechazó una H₀ que era verdadera.'],
+ ['No detectar que una máquina está descalibrada cuando sí lo está.',1,'No se rechazó una H₀ que era falsa.'],
+ ['Un test dice que hay diferencia entre dos cursos, pero fue casualidad del muestreo.',0,'Falsa alarma: probabilidad α.'],
+ ['Un estudio chico no encuentra un efecto que sí existe.',1,'Falta de potencia: probabilidad β.'],
+ ['Condenar a un inocente (H₀: es inocente).',0,'Se rechaza H₀ siendo verdadera.'],
+ ['Absolver a un culpable (H₀: es inocente).',1,'No se rechaza H₀ siendo falsa.']]),
+sortTest:el=>sorter(el,'¿Qué prueba corresponde?',['t de Student','ANOVA','Mann-Whitney U','Welch'],[
+ ['Comparar la media de dos grupos independientes con datos aproximadamente normales.',0,'Dos medias, supuestos razonables.'],
+ ['Comparar las notas medias de cuatro cursos.',1,'Tres o más medias: primero ANOVA.'],
+ ['Comparar dos sucursales con tiempos de espera muy asimétricos.',2,'Sin normalidad: alternativa no paramétrica basada en rangos.'],
+ ['Comparar tres sectores cuyas dispersiones son muy distintas (Levene rechazó).',3,'Sin homocedasticidad: ANOVA de Welch.'],
+ ['Comparar el peso de las mismas personas antes y después de una dieta.',0,'Muestras pareadas: t para muestras relacionadas.'],
+ ['Comparar el rendimiento medio de tres fertilizantes con varianzas parecidas.',1,'ANOVA y, si es significativo, Tukey.']]),
+sortOR:el=>sorter(el,'Leer un Odds Ratio',['Aumenta las odds','No cambia','Disminuye las odds'],[
+ ['OR = 1,50',0,'Las odds se multiplican por 1,5: aumentan 50 %.'],
+ ['OR = 0,65',2,'Las odds bajan 35 %. Es protector si el evento es perjudicial.'],
+ ['OR = 1,00',1,'β = 0: el predictor no tiene efecto.'],
+ ['β₁ = −0,7',2,'Coeficiente negativo: e^β es menor que 1.'],
+ ['β₁ = 0,405',0,'e^0,405 ≈ 1,5.'],
+ ['OR = 3,2',0,'Las odds se multiplican por más de 3.']]),
+sortSuc:el=>sorter(el,'¿Qué regla de probabilidad uso?',['Suma (A o B)','Producto (A y B)','Condicional (A dado B)','Complemento'],[
+ ['Probabilidad de que un pasajero sea mujer o fumador.',0,'P(A) + P(B) − P(A y B) = 0,40 + 0,35 − 0,10 = 0,65.'],
+ ['Probabilidad de que un conductor vea los cuatro letreros, si son independientes.',1,'Se multiplican: 0,75 · 0,82 · 0,87 · 0,90 ≈ 0,48.'],
+ ['Sabiendo que embarcó una mujer, probabilidad de que sea fumadora.',2,'Se achica el universo a las 40 mujeres: 10 / 40 = 0,25.'],
+ ['Probabilidad de obtener al menos una cara al tirar tres monedas.',3,'1 − P(ninguna cara) = 1 − 1/8 = 7/8.'],
+ ['Probabilidad de que al menos uno de dos clientes pague en término (p = 0,82).',3,'1 − 0,18² = 0,9676.'],
+ ['Sacar dos bolitas rojas seguidas sin reposición (5 rojas, 10 blancas).',1,'Producto con condicional: 5/15 · 4/14 ≈ 0,095.']])
+});
+
+const Q=(q,o,a,e)=>({q,o,a,e});
+const TOPICS=[
+{n:1,eje:1,short:'Parámetro y estimador',title:'Parámetro, estimador e insesgadez',
+lead:'La distinción con la que empieza toda la inferencia: lo que quiero saber y lo que puedo calcular.',
+html:`${MINI([['Parámetro','Característica de <b>toda la población</b>. Es un valor fijo, aunque casi siempre desconocido. Se escribe con letras griegas: μ, σ, p.'],['Estimador','Una regla calculada con <b>una muestra</b> para aproximar el parámetro. Cambia de muestra en muestra. Ejemplos: x̄, s, p̂.']])}
+<p>${EJ}La altura media real de 10.000 estudiantes es μ. Medimos a 100 y calculamos su media x̄ para estimarla. Si tomáramos otros 100, x̄ daría otro valor; μ seguiría siendo el mismo.</p>
+${T(['','Población (parámetro)','Muestra (estimador)'],[['Media','μ','x̄'],['Desviación estándar','σ','s'],['Proporción','p','p̂'],['Tamaño','N','n']])}
+${D('La <b>distribución muestral</b> es la distribución de un estadístico (como x̄) calculado en todas las muestras posibles de tamaño n de una misma población.')}
+<h3>Estimador insesgado</h3>
+${F('E(θ̂) = θ')}
+<p>Un estimador es <b>insesgado</b> cuando su valor esperado coincide con el parámetro: si repitiéramos el muestreo muchas veces, sus estimaciones promediarían el valor real. No tiende a equivocarse siempre hacia el mismo lado.</p>
+${TRAP('Pensar que insesgado significa "sin error". Cada muestra puede dar un valor por encima o por debajo; lo que no hay es un desvío sistemático.')}
+<p><b>Estimación puntual</b> es dar un solo valor (x̄ = 172 cm). <b>Estimación por intervalo</b> es dar un rango con un nivel de confianza.</p>`,
+coloquio:'Un parámetro es una característica fija, aunque generalmente desconocida, de toda la población, como su media μ. Un estimador es una fórmula calculada con una muestra, como la media muestral, para aproximarlo. Es insesgado si su valor esperado coincide con el parámetro.',
+links:[2,3],
+quiz:[Q('Si tomo otra muestra de la misma población, ¿qué cambia?',['El parámetro','La estimación','Ambos','Ninguno'],1,'El parámetro es fijo; la estimación varía entre muestras.'),
+Q('¿Cuál de estos es un parámetro?',['x̄','s','μ','p̂'],2,'μ describe a toda la población.'),
+Q('Un estimador insesgado es aquel que…',['Nunca se equivoca','En promedio acierta el parámetro','Tiene varianza cero','Usa toda la población'],1,'E(estimador) = parámetro; cada muestra puede tener error.')]},
+
+{n:2,eje:1,short:'TLC y error estándar',title:'Teorema Central del Límite y error estándar',
+lead:'Por qué la normal aparece en todos lados y cuánto se puede confiar en un promedio.',
+html:`${D('El <b>Teorema Central del Límite</b> dice que, con muestras suficientemente grandes (regla práctica: n ≥ 30), la distribución de la media muestral se aproxima a una normal, <b>aunque la población original no sea normal</b>.')}
+${F(`x̄ ≈ Normal( μ , ${FR('σ','√n')} )`)}
+${W('tlc')}
+<p>Condiciones del caso clásico: observaciones independientes y varianza finita. Los datos originales no necesitan ser normales.</p>
+<h3>Error estándar</h3>
+${D('El <b>error estándar (EE)</b> es la desviación estándar de la distribución muestral. Mide cuánto varía un estimador de muestra en muestra: es la incertidumbre de la estimación.')}
+${F(`EE(x̄) = ${FR('σ','√n')} ≈ ${FR('s','√n')} &nbsp;&nbsp;&nbsp; EE(p̂) = √ ${FR('p(1 − p)','n')}`)}
+<p><b>Efecto de n:</b> al aumentar el tamaño de muestra, el error estándar baja, pero con la raíz cuadrada. Para reducirlo a la mitad hay que <b>cuadruplicar</b> n.</p>
+<p>${EJ}Con σ = 20: si n = 25, EE = 20/5 = 4. Si n = 100, EE = 20/10 = 2.</p>
+${TRAP('Confundir desviación estándar con error estándar. La desviación estándar describe cuánto varían los datos individuales; el error estándar, cuánto varía la media entre muestras.')}
+<p><b>Corrección por población finita:</b> si se muestrea sin reemplazo y la muestra supera el 5 % de la población, el EE se multiplica por √[(N − n) / (N − 1)], que lo reduce.</p>`,
+coloquio:'El Teorema Central del Límite dice que, con muestras suficientemente grandes, la distribución de la media muestral se aproxima a una normal aunque la población no lo sea. El error estándar es sigma sobre raíz de n: baja al aumentar la muestra, y para reducirlo a la mitad hay que cuadruplicar n.',
+links:[1,3,5],
+quiz:[Q('Con σ = 30 y n = 36, ¿cuánto vale el error estándar de la media?',['30','6','5','0,83'],2,'30 / √36 = 30 / 6 = 5.'),
+Q('Para reducir el error estándar a la mitad hay que…',['Duplicar n','Cuadruplicar n','Reducir n a la mitad','Aumentar σ'],1,'El EE depende de 1/√n.'),
+Q('El TLC exige que la población original sea normal.',['Verdadero','Falso'],1,'Justamente vale aunque no lo sea, con n suficientemente grande.')]},
+
+{n:3,eje:1,short:'Intervalos de confianza y t',title:'Intervalos de confianza y distribución t de Student',
+lead:'Dar un rango en lugar de un número, y saber qué significa de verdad "95 % de confianza".',
+html:`${F('Intervalo = Estimador ± Valor crítico × Error estándar')}
+<p>El término que se suma y se resta es el <b>margen de error</b>.</p>
+<h3>Qué significa el nivel de confianza (1 − α)</h3>
+<p>Un 95 % de confianza significa que, si repitiéramos el muestreo muchas veces y construyéramos un intervalo cada vez, <b>alrededor del 95 % de esos intervalos contendrían el parámetro verdadero</b>. La confianza está en el procedimiento.</p>
+${W('ic')}
+${TRAP('Decir "hay 95 % de probabilidad de que μ esté en este intervalo". El parámetro es fijo: no tiene probabilidad. Lo que varía es el intervalo. α = 0,05 es el 5 % de intervalos que, a la larga, no lo contienen.')}
+<h3>¿Z o t de Student?</h3>
+${T(['','Normal Z','t de Student'],[['Se usa cuando','σ poblacional conocida, o n grande','σ desconocida: se estima con s'],['Típicamente','Muestras grandes','Muestras chicas y datos aproximadamente normales'],['Forma','Fija','Colas más pesadas; depende de los grados de libertad (n − 1)'],['Efecto','Intervalo más angosto','Intervalo más ancho: paga la incertidumbre de estimar σ']])}
+${W('tz')}
+<p>${EJ}Con 12 mediciones y σ desconocida se usa t con 11 grados de libertad. A medida que n crece, t se parece cada vez más a Z.</p>`,
+coloquio:'Un 95 % de confianza significa que, si repitiéramos el muestreo muchas veces, alrededor del 95 % de los intervalos construidos contendrían el parámetro verdadero; no es una probabilidad del parámetro. Uso t de Student cuando desconozco la desviación poblacional y la estimo con la muestra, sobre todo con muestras chicas.',
+links:[2,4,6],
+quiz:[Q('¿Qué pasa con el intervalo si subo la confianza de 95 % a 99 %?',['Se angosta','Se ensancha','No cambia','Desaparece el error'],1,'Más confianza exige un valor crítico mayor.'),
+Q('Tengo n = 10 y no conozco σ. ¿Qué distribución uso para la media?',['Z','t con 9 grados de libertad','t con 10 grados de libertad','Binomial'],1,'gl = n − 1.'),
+Q('La interpretación correcta de un IC del 95 % es…',['El 95 % de los datos está en el intervalo','Hay 95 % de probabilidad de que μ cambie','El 95 % de los intervalos así construidos contendría a μ','La muestra representa al 95 % de la población'],2,'La confianza se refiere al procedimiento repetido.')]},
+
+{n:4,eje:1,short:'Proporciones y tamaño de muestra',title:'Proporciones y tamaño de muestra',
+lead:'Cuánta gente hay que encuestar y cuándo se puede usar la normal para una proporción.',
+html:`<h3>Aproximar una proporción por una normal</h3>
+<p>La proporción muestral p̂ se puede tratar como normal si se cumplen dos condiciones:</p>
+${L(['Observaciones <b>independientes</b> (muestreo adecuado).','Suficientes <b>éxitos y fracasos esperados</b>. Regla habitual: n·p ≥ 10 y n·(1 − p) ≥ 10. Algunos textos, y el resumen de la cátedra, usan el criterio ≥ 5.'])}
+<p>${EJ}Con n = 200 y p = 0,2: n·p = 40 y n·(1 − p) = 160. La aproximación es razonable. Con eventos muy raros hace falta una muestra mucho mayor o métodos exactos.</p>
+<h3>Tamaño de muestra para una proporción</h3>
+${F(`n ≈ ${FR('z² · p(1 − p)','E²')}`)}
+<p>E es el margen de error deseado y z el valor crítico (1,96 para 95 %).</p>
+<h3>Por qué p = 0,50 cuando no hay información previa</h3>
+<p>El producto p(1 − p) es la variabilidad de una proporción y alcanza su máximo en p = 0,5. Usar ese valor da el tamaño de muestra <b>más grande</b> posible, o sea el más conservador: pase lo que pase, la muestra alcanza.</p>
+${W('muestra')}
+<p>Si se eligiera p = 0,1 sin evidencia, se podría subestimar la variabilidad y quedarse corto de muestra.</p>`,
+coloquio:'Se usa p igual a 0,50 porque maximiza el producto p por uno menos p, que es la variabilidad de una proporción: así obtengo el tamaño de muestra más conservador. Para aproximar una proporción por una normal necesito observaciones independientes y al menos diez éxitos y diez fracasos esperados.',
+links:[2,3,19],
+quiz:[Q('¿En qué valor de p es máximo p(1 − p)?',['0,1','0,25','0,5','1'],2,'Vale 0,25, su máximo.'),
+Q('Con n = 50 y p = 0,04, ¿se puede aproximar por una normal?',['Sí','No, porque n·p = 2 es muy chico','Sí, porque n ≥ 30','No, porque p < 0,5'],1,'Se necesitan suficientes éxitos esperados.'),
+Q('Si quiero la mitad de margen de error, el tamaño de muestra debe…',['Duplicarse','Cuadruplicarse','Bajar a la mitad','Quedar igual'],1,'E está al cuadrado en el denominador.')]},
+
+{n:5,eje:2,short:'Lógica de una prueba de hipótesis',title:'La lógica de las pruebas de hipótesis',
+lead:'El razonamiento que comparten todas las pruebas del módulo. Si esto está claro, el resto son variantes.',
+html:`${MINI([['Hipótesis nula (H₀)','Sostiene la igualdad, la ausencia de efecto, el statu quo. Es la que se somete a prueba.'],['Hipótesis alternativa (H₁)','Es la afirmación del investigador: hay diferencia, es mayor o es menor.']])}
+${FLOW([['Plantear','H₀ y H₁'],['Fijar α','antes de mirar los datos'],['Calcular','el estadístico de prueba'],['Obtener','el p-valor'],['Decidir','p ≤ α: se rechaza H₀']])}
+${D('El <b>p-valor</b> es la probabilidad de observar un resultado tan extremo o más que el obtenido, <b>suponiendo que H₀ es verdadera</b>. Si p ≤ α, se rechaza H₀.')}
+${D('El <b>nivel de significación α</b> es la probabilidad máxima que se tolera de cometer un error de tipo I. Se fija de antemano, habitualmente en 0,05.')}
+<h3>Los dos errores posibles</h3>
+${T(['','H₀ es verdadera','H₀ es falsa'],[['Rechazo H₀','<b>Error tipo I</b> (falso positivo). Probabilidad α','Decisión correcta. Potencia = 1 − β'],['No rechazo H₀','Decisión correcta','<b>Error tipo II</b> (falso negativo). Probabilidad β']])}
+${W('sortErr')}
+<p><b>Potencia estadística (1 − β):</b> probabilidad de detectar un efecto que realmente existe. Con n fijo hay un compromiso inevitable: bajar α hace subir β. La forma de bajar los dos es aumentar la muestra.</p>
+${TRAP('Decir "se acepta H₀" o "p > 0,05 demuestra que H₀ es verdadera". Solo significa que no hay evidencia suficiente para rechazarla. Y el p-valor no es la probabilidad de que H₀ sea cierta.')}
+${TRAP('Confundir significancia estadística con importancia práctica. Con muestras enormes, una diferencia minúscula da p < 0,05.')}`,
+coloquio:'La hipótesis nula sostiene que no hay efecto y es la que se pone a prueba; la alternativa es lo que quiere mostrar el investigador. El p-valor es la probabilidad de un resultado tan extremo como el observado si la nula fuera cierta: si es menor o igual que alfa, la rechazo. Error tipo I es rechazar una nula verdadera; tipo II, no rechazar una falsa.',
+links:[3,6,8,16],
+quiz:[Q('Obtengo p = 0,03 con α = 0,05. ¿Qué decido?',['No rechazo H₀','Rechazo H₀','Acepto H₀ como verdadera','Repito hasta que dé otra cosa'],1,'p ≤ α.'),
+Q('El error de tipo I es…',['No rechazar H₀ siendo falsa','Rechazar H₀ siendo verdadera','Usar una muestra chica','Calcular mal el p-valor'],1,'Es el falso positivo, con probabilidad α.'),
+Q('La potencia de una prueba es…',['α','β','1 − β','1 − α'],2,'Probabilidad de rechazar H₀ cuando es falsa.'),
+Q('Verdadero o falso: p = 0,40 demuestra que H₀ es verdadera.',['Verdadero','Falso'],1,'Solo indica evidencia insuficiente contra H₀.')]},
+
+{n:6,eje:2,short:'Prueba t: señal y ruido',title:'El estadístico t, muestras independientes y pareadas',
+lead:'La prueba más usada, entendida como una división: cuánto efecto hay por cada unidad de incertidumbre.',
+html:`${F(`t = ${FR('Señal','Ruido')} = ${FR('estimación − valor bajo H₀','error estándar')}`)}
+<p>El estadístico <b>t</b> mide <b>cuántos errores estándar</b> separan lo observado de lo que plantea H₀. En una muestra: t = (x̄ − μ₀) / (s / √n), con n − 1 grados de libertad.</p>
+<p>${EJ}x̄ = 52, μ₀ = 50, s = 10, n = 100. EE = 10/√100 = 1, así que t = (52 − 50)/1 = 2.</p>
+${W('tstat')}
+${TRAP('Creer que un t grande implica un efecto importante. Un efecto chico con una muestra enorme también da un t grande, porque el ruido se achica.')}
+<h3>Muestras independientes o pareadas</h3>
+${MINI([['Independientes','Dos grupos formados por individuos distintos. Ejemplo: grupo control contra grupo tratamiento. Señal: x̄₁ − x̄₂.'],['Pareadas','Al mismo individuo se lo mide dos veces. Ejemplo: antes y después. Se trabaja con la diferencia de cada sujeto, lo que cancela el ruido individual y da más potencia.']])}
+<h3>Cuando no hay normalidad: Mann-Whitney U</h3>
+${D('La prueba de <b>Mann-Whitney U</b> es la alternativa <b>no paramétrica</b> a la t para dos muestras independientes. Trabaja con los <b>rangos</b> (el orden de los datos) en lugar de las medias.')}
+<p>${EJ}Comparar los tiempos de espera, muy asimétricos, de dos sucursales. Ojo: compara distribuciones, y solo equivale a comparar medianas si las dos distribuciones tienen la misma forma.</p>
+${W('sortTest')}`,
+coloquio:'El estadístico t mide cuántos errores estándar separan la diferencia observada de la planteada por la hipótesis nula: es señal sobre ruido. En una muestra es la media menos mu cero, dividido s sobre raíz de n. Si no se cumple la normalidad con dos muestras independientes, uso Mann-Whitney U, que trabaja con rangos.',
+links:[5,7,8],
+quiz:[Q('x̄ = 105, μ₀ = 100, s = 20, n = 64. ¿Cuánto vale t?',['0,25','2','5','2,5'],1,'EE = 20/8 = 2,5; t = 5/2,5 = 2.'),
+Q('Medir la presión de los mismos pacientes antes y después de un tratamiento es un diseño de muestras…',['Independientes','Pareadas','Aleatorias simples','No paramétricas'],1,'Cada sujeto es su propio control.'),
+Q('¿Qué prueba reemplaza a la t para dos muestras independientes sin normalidad?',['ANOVA','Tukey','Mann-Whitney U','Levene'],2,'Es no paramétrica y usa rangos.')]},
+
+{n:7,eje:2,short:'Normalidad y Q-Q plot',title:'Pruebas de normalidad y Q-Q plot',
+lead:'Muchas pruebas suponen normalidad. Cómo se verifica y por qué el gráfico pesa tanto como el p-valor.',
+html:`<h3>Shapiro-Wilk y Kolmogorov-Smirnov</h3>
+${MINI([['H₀','Los datos provienen de una distribución normal.'],['H₁','Los datos no provienen de una distribución normal.']])}
+<p>Shapiro-Wilk contrasta específicamente normalidad. Kolmogorov-Smirnov compara los datos con una distribución especificada (que puede ser la normal).</p>
+<p><b>Atención al sentido:</b> acá un p-valor <b>chico</b> es la mala noticia. p ≤ 0,05 → se rechaza la normalidad. p > 0,05 → no hay evidencia contra la normalidad (lo que no la demuestra).</p>
+<h3>La trampa de las muestras grandes</h3>
+<p>Con muestras muy grandes (miles de datos), la prueba tiene tanta potencia que detecta desviaciones <b>minúsculas e irrelevantes</b> y devuelve p ≤ 0,05 igual. Se la llama paradoja del poder o trampa del big data. Por eso el p-valor se complementa siempre con gráficos y con el contexto.</p>
+<h3>Q-Q plot</h3>
+${D('El <b>Q-Q plot</b> compara los cuantiles observados con los cuantiles teóricos de una normal. Si los puntos siguen aproximadamente la diagonal, los datos son compatibles con la normalidad.')}
+${W('qq')}
+<p><b>Su ventaja sobre las pruebas formales:</b> no da solo un sí o un no. Muestra <b>cómo</b> y <b>dónde</b> se apartan los datos (asimetría, colas pesadas, valores extremos) y permite juzgar si el desvío importa.</p>`,
+coloquio:'En Shapiro-Wilk la hipótesis nula dice que los datos siguen una distribución normal y la alternativa que no. Con muestras muy grandes la prueba detecta desviaciones mínimas y da p-valores chicos aunque no importen en la práctica; por eso se complementa con el Q-Q plot, donde los puntos deben seguir la diagonal.',
+links:[5,8,11],
+quiz:[Q('En Shapiro-Wilk obtengo p = 0,02 (α = 0,05). ¿Qué concluyo?',['Los datos son normales','Hay evidencia de que no son normales','La muestra es chica','No se puede concluir nada'],1,'Se rechaza H₀: normalidad.'),
+Q('¿Por qué puede engañar una prueba de normalidad con n = 20.000?',['Porque nunca rechaza','Porque detecta desviaciones irrelevantes y rechaza igual','Porque no se puede calcular','Porque exige varianzas iguales'],1,'Demasiada potencia: todo desvío resulta "significativo".'),
+Q('En un Q-Q plot de datos normales, los puntos…',['Forman una U','Siguen la diagonal','Forman un embudo','Quedan horizontales'],1,'Cuantiles observados ≈ cuantiles teóricos.')]},
+
+{n:8,eje:2,short:'ANOVA, Levene y Tukey',title:'ANOVA: comparar tres o más medias',
+lead:'Por qué no se hacen muchas pruebas t, qué hace el ANOVA y qué viene antes y después.',
+html:`<h3>La trampa de la multiplicidad</h3>
+<p>Cada prueba t al 5 % tiene un 5 % de riesgo de falso positivo. Si se hacen muchas, la probabilidad de que <b>al menos una</b> dé un falso positivo (la tasa de error familiar) se dispara:</p>
+${F('Error familiar = 1 − (1 − α)<sup>m</sup>')}
+${W('fwer')}
+<h3>ANOVA ómnibus</h3>
+${D('El <b>ANOVA de un factor</b> contrasta con <b>una sola prueba</b> si todas las medias poblacionales son iguales. H₀: μ₁ = μ₂ = … = μₖ. H₁: al menos una difiere.')}
+${F(`F = ${FR('MS entre grupos','MS dentro de los grupos')}`)}
+<p>Otra vez señal sobre ruido: cuánto se separan las medias entre sí, comparado con cuánto varían los datos dentro de cada grupo.</p>
+${W('anova')}
+${TRAP('Creer que un ANOVA significativo dice cuáles grupos son distintos. Solo dice que al menos uno difiere. Por eso se llama "ómnibus".')}
+<h3>El recorrido completo</h3>
+${FLOW([['Levene','¿varianzas iguales?'],['ANOVA clásico','si Levene no rechaza'],['Welch','si Levene rechaza'],['Tukey HSD','solo si F es significativo']])}
+${L(['<b>Prueba de Levene:</b> evalúa la <b>homocedasticidad</b>. H₀: las varianzas de los grupos son iguales. Si p < 0,05, se viola el supuesto.','<b>ANOVA de Welch:</b> alternativa paramétrica cuando las varianzas difieren. Ajusta los grados de libertad y no requiere varianzas iguales.','<b>Tukey HSD:</b> prueba <b>post-hoc</b>. Compara todos los pares de medias y dice cuáles difieren, manteniendo el error familiar en α.'])}`,
+coloquio:'Al hacer muchas pruebas t aumenta la probabilidad de obtener al menos un falso positivo. Por eso para tres o más medias se usa ANOVA, que contrasta si todas son iguales con una sola prueba F. Antes verifico varianzas iguales con Levene; si falla uso Welch. Si el ANOVA es significativo, Tukey identifica qué pares difieren.',
+links:[5,6,7],
+quiz:[Q('¿Cuántas comparaciones de a pares hay entre 4 grupos?',['3','4','6','8'],2,'k(k − 1)/2 = 4·3/2 = 6.'),
+Q('Levene da p = 0,01. ¿Qué corresponde?',['ANOVA clásico','ANOVA de Welch','Tukey directamente','Shapiro-Wilk'],1,'Se rechazó la igualdad de varianzas.'),
+Q('¿Cuándo se aplica Tukey HSD?',['Antes del ANOVA','Solo si el ANOVA fue significativo','En lugar de Levene','Cuando hay dos grupos'],1,'Es una prueba post-hoc.'),
+Q('Un ANOVA significativo indica que…',['Todas las medias son distintas','Al menos una media difiere','Las varianzas son iguales','Los datos son normales'],1,'No dice cuál.')]},
+
+{n:9,eje:3,short:'Correlación y regresión',title:'Correlación y regresión: diferencias y coeficiente de Pearson',
+lead:'Dos herramientas parecidas con preguntas distintas. Y la advertencia de siempre sobre la causalidad.',
+html:`${T(['','Correlación','Regresión'],[['Pregunta','¿Qué tan fuerte y en qué dirección se asocian?','¿Cómo cambia Y cuando cambia X?'],['Roles de las variables','Simétricos: no distingue explicativa de respuesta','Asimétricos: X explica, Y responde'],['Resultado','Un número: r','Una ecuación: ŷ = β₀ + β₁x'],['Sirve para','Describir la asociación','Explicar y predecir']])}
+${TRAP('Correlación no implica causalidad, y la regresión tampoco la prueba por sí sola. Puede haber una tercera variable detrás de las dos.')}
+<h3>Coeficiente de correlación de Pearson</h3>
+${D('<b>r</b> mide la fuerza y la dirección de la asociación <b>lineal</b> entre dos variables cuantitativas. Varía entre −1 y +1.')}
+${W('corr')}
+${T(['Valor de r','Lectura'],[['Cerca de +1','Asociación lineal positiva fuerte'],['Cerca de −1','Asociación lineal negativa fuerte'],['Cerca de 0','Poca o ninguna asociación <b>lineal</b>']])}
+<p>${EJ}r = −0,9 entre precio y demanda: cuando el precio sube, la demanda baja, y de forma muy consistente.</p>
+<p><b>r = 0 no significa "sin relación":</b> puede existir una relación curva perfecta (en forma de U) con r = 0. En regresión lineal simple, R² = r².</p>`,
+coloquio:'La correlación cuantifica la fuerza y la dirección de una asociación sin distinguir variable explicativa y respuesta; la regresión modela una respuesta en función de predictores para explicar o predecir. Ninguna prueba causalidad. Pearson mide asociación lineal y va de menos uno a uno.',
+links:[10,11,12],
+quiz:[Q('¿Entre qué valores varía r?',['0 y 1','−1 y 1','−∞ y +∞','0 y 100'],1,'−1 ≤ r ≤ 1.'),
+Q('r = 0 significa que…',['No hay ninguna relación','No hay relación lineal','Hay relación perfecta','Hay causalidad'],1,'Puede haber una relación curva.'),
+Q('¿Cuál de las dos distingue entre variable explicativa y respuesta?',['La correlación','La regresión','Ambas','Ninguna'],1,'La correlación es simétrica.')]},
+
+{n:10,eje:3,short:'La recta de regresión',title:'La recta: pendiente, intercepto y mínimos cuadrados',
+lead:'Cómo se lee cada parte de ŷ = β₀ + β₁x y con qué criterio se elige la recta.',
+html:`${F('ŷ = β₀ + β₁x')}
+${MINI([['Pendiente β₁','Cuánto cambia el valor esperado de Y cuando X aumenta <b>una unidad</b>. Geométricamente es la inclinación de la recta: positiva si sube, negativa si baja.'],['Intercepto β₀','El valor predicho de Y cuando X = 0. Es donde la recta corta al eje vertical.']])}
+<p>${EJ}ŷ = 5 + 2x, con x = horas de estudio. Por cada hora extra, la nota predicha sube 2 puntos. Con cero horas, la nota predicha es 5.</p>
+<h3>Cuándo tiene sentido el intercepto</h3>
+<p>Solo si X = 0 es un valor <b>posible y relevante</b> dentro del rango observado. Si los datos van de 150 a 190 cm de altura, el intercepto (el peso predicho para una persona de 0 cm) es una extrapolación sin sentido: queda como un parámetro matemático que ubica la recta.</p>
+<h3>Mínimos Cuadrados Ordinarios (OLS / MCO)</h3>
+${D('OLS elige los coeficientes que <b>minimizan la suma de los residuos al cuadrado</b>: la suma de (yᵢ − ŷᵢ)².')}
+${W('recta')}
+<p><b>¿Por qué al cuadrado?</b> Para que los errores positivos y negativos no se cancelen, y para penalizar más los errores grandes.</p>
+<p>${EJ}Valores reales 4 y 8, predicciones 5 y 6. Errores: −1 y +2. Suma de cuadrados: 1 + 4 = 5.</p>`,
+coloquio:'La pendiente beta uno indica cuánto cambia el valor esperado de Y cuando X aumenta una unidad; es la inclinación de la recta. El intercepto es el valor predicho cuando X vale cero y solo tiene sentido práctico si cero es un valor posible. Mínimos cuadrados elige los coeficientes que minimizan la suma de los residuos al cuadrado.',
+links:[9,11,12],
+quiz:[Q('En ŷ = 12 − 3x, al aumentar x en 1 la predicción…',['Sube 3','Baja 3','Sube 12','No cambia'],1,'La pendiente es −3.'),
+Q('¿Cuándo el intercepto tiene interpretación práctica?',['Siempre','Cuando X = 0 es posible y relevante','Nunca','Cuando es positivo'],1,'Si no, es una extrapolación.'),
+Q('OLS minimiza…',['La suma de los residuos','La suma de los residuos al cuadrado','El valor de r','La pendiente'],1,'Σ(yᵢ − ŷᵢ)².')]},
+
+{n:11,eje:3,short:'R², residuos y homocedasticidad',title:'R², residuos y homocedasticidad',
+lead:'Qué tan bien ajusta la recta y cómo saber si el modelo es confiable mirando sus errores.',
+html:`<h3>Coeficiente de determinación</h3>
+${F(`R² = 1 − ${FR('SSE','SST')}`)}
+${D('<b>R²</b> mide qué proporción de la variabilidad de Y explica el modelo, comparado con predecir siempre la media.')}
+<p><b>R² = 0,81</b> significa que el modelo explica el <b>81 % de la variabilidad</b> de Y en esos datos. No significa 81 % de aciertos ni demuestra causalidad. Fuera de la muestra, R² puede ser negativo si el modelo predice peor que la media.</p>
+<h3>Residuos</h3>
+${F('eᵢ = yᵢ − ŷᵢ')}
+<p>El <b>residuo</b> es la diferencia entre el valor observado y el predicho. ${EJ}Venta real 120, predicción 110: residuo +10.</p>
+<p><b>Papel en el diagnóstico:</b> analizar sus patrones permite detectar no linealidad, varianza desigual y observaciones extremas. Lo que se espera es una nube sin forma, centrada en cero.</p>
+${W('residuos')}
+<h3>Homocedasticidad</h3>
+${D('<b>Homocedasticidad:</b> la varianza de los errores es <b>constante</b> para todos los valores de los predictores. Var(ε | X) = σ².')}
+<p>Si la dispersión crece o decrece (forma de embudo), hay <b>heterocedasticidad</b>: los errores estándar y las pruebas clásicas dejan de ser confiables. ${EJ}Los errores al predecir ventas son mucho más dispersos en las tiendas grandes.</p>`,
+coloquio:'R cuadrado mide la proporción de variabilidad de Y explicada por el modelo respecto de la media: 0,81 significa que explica el 81 %. Un residuo es la diferencia entre el valor observado y el predicho, y sus patrones ayudan a detectar problemas. Homocedasticidad es que la varianza de los errores sea constante.',
+links:[9,10,12,7],
+quiz:[Q('R² = 0,81 significa que el modelo…',['Acierta el 81 % de las predicciones','Explica el 81 % de la variabilidad de Y','Tiene r = 0,81','Demuestra causalidad'],1,'Es proporción de varianza explicada.'),
+Q('Real = 50, predicho = 58. ¿Cuánto vale el residuo?',['8','−8','108','0'],1,'e = y − ŷ = 50 − 58.'),
+Q('Un gráfico de residuos en forma de embudo sugiere…',['Homocedasticidad','Heterocedasticidad','Normalidad','Buen ajuste'],1,'La varianza del error no es constante.')]},
+
+{n:12,eje:3,short:'Regresión múltiple',title:'Regresión múltiple: R² ajustado y multicolinealidad',
+lead:'Con varios predictores aparecen dos problemas nuevos: inflar el R² y repetir información.',
+html:`<h3>R² ajustado</h3>
+<p>El R² convencional <b>nunca baja</b> al agregar una variable, aunque sea completamente inútil. Así, sumar predictores siempre "mejora" el modelo en apariencia.</p>
+${F(`R² ajustado = 1 − (1 − R²) · ${FR('n − 1','n − k − 1')}`)}
+<p>El <b>R² ajustado</b> penaliza la cantidad de predictores (k). Solo sube si la variable nueva aporta más de lo que cuesta, y puede bajar. Por eso permite comparar de forma justa modelos con distinta cantidad de variables.</p>
+<p>${EJ}Agregar una variable aleatoria sube R² de 0,800 a 0,801, pero el R² ajustado baja.</p>
+<h3>Multicolinealidad</h3>
+${D('Hay <b>multicolinealidad</b> cuando dos o más predictores están fuertemente relacionados entre sí.')}
+<p><b>Efecto negativo:</b> los coeficientes se vuelven inestables y sus errores estándar aumentan, por lo que ya no se puede interpretar el efecto individual de cada variable.</p>
+<p>${EJ}Usar ingreso mensual e ingreso anual en el mismo modelo: son casi la misma información.</p>
+${F(`VIF = ${FR('1','1 − Rⱼ²')}`)}
+<p>El <b>VIF</b> (factor de inflación de la varianza) la detecta: valores altos indican problema. <b>Soluciones:</b> quitar o combinar predictores redundantes, o usar regularización.</p>
+<h3>Regularización</h3>
+${T(['','Qué penaliza','Efecto'],[['Ridge (L2)','λ · Σ βⱼ²','Contrae los coeficientes hacia cero sin anularlos. Resuelve multicolinealidad.'],['Lasso (L1)','λ · Σ |βⱼ|','Lleva coeficientes irrelevantes exactamente a cero: selección automática de variables.'],['Elastic Net','Mezcla de L1 y L2','Combina la selección de Lasso con la estabilidad de Ridge.']])}`,
+coloquio:'R cuadrado nunca disminuye al agregar predictores, incluso inútiles; el R cuadrado ajustado penaliza incorporar variables y permite comparar modelos de manera más justa. Multicolinealidad es que dos o más predictores estén muy relacionados: vuelve inestables los coeficientes. Se revisa con el VIF y se corrige quitando, combinando o regularizando.',
+links:[10,11,15],
+quiz:[Q('¿Qué pasa con el R² al agregar una variable inútil?',['Baja','Sube o queda igual','Se vuelve negativo','Vale 1'],1,'Nunca disminuye; por eso se usa el ajustado.'),
+Q('¿Qué indicador detecta multicolinealidad?',['VIF','AUC','F1','p-valor de Levene'],0,'Factor de inflación de la varianza.'),
+Q('¿Qué regularización hace selección automática de variables?',['Ridge','Lasso','Ninguna','OLS'],1,'Lleva coeficientes a cero.')]},
+
+{n:13,eje:4,short:'De la recta a la sigmoide',title:'Por qué logística: de la recta a la sigmoide',
+lead:'Qué falla cuando se usa una recta para predecir un sí o un no, y cómo lo arregla la sigmoide.',
+html:`<h3>Por qué OLS no sirve para una respuesta binaria</h3>
+${L(['Una recta no tiene límites: puede predecir "probabilidades" de <b>−0,2 o 1,3</b>, que no existen.','Los supuestos del modelo lineal no se cumplen: los errores no son normales ni tienen varianza constante (son heterocedásticos).','El efecto de X sobre una probabilidad no es constante: cerca de 0 y de 1 tiene que frenarse.'])}
+<p>Existe el "modelo de probabilidad lineal", pero con esas limitaciones.</p>
+<h3>La función sigmoide</h3>
+${F(`p = ${FR('1','1 + e<sup>−z</sup>')} &nbsp;&nbsp; con z = β₀ + β₁x₁ + … + βₚxₚ`)}
+${D('La <b>sigmoide</b> (o función logística) transforma el predictor lineal z, que puede ser cualquier número real, en una probabilidad acotada entre 0 y 1. Tiene forma de S.')}
+${W('sigmoide')}
+${T(['z','p'],[['Muy negativo','Se acerca a 0'],['0','0,5'],['2','1 / (1 + e⁻²) ≈ 0,881'],['Muy positivo','Se acerca a 1']])}
+${T(['','Regresión lineal (OLS)','Regresión logística (MLE)'],[['Respuesta Y','Continua','Binaria: 0 o 1'],['Salida','Valor esperado','Probabilidad P(Y = 1)'],['Rango','Sin límites','Entre 0 y 1'],['Se ajusta por','Mínimos cuadrados','Máxima verosimilitud'],['β₁ indica','Cambio constante en Y','Cambio en log-odds; e^β₁ es el Odds Ratio']])}`,
+coloquio:'OLS no es adecuado para una respuesta binaria porque puede predecir valores menores que cero o mayores que uno, y sus supuestos de error y varianza no se cumplen. La logística usa la función sigmoide, uno sobre uno más e a la menos z, que transforma cualquier número real en una probabilidad entre cero y uno.',
+links:[10,14,15],
+quiz:[Q('¿Cuál es el problema principal de usar una recta para Y binaria?',['Es muy lenta','Puede predecir valores fuera de 0 y 1','No admite predictores','Siempre da 0,5'],1,'Una probabilidad debe estar entre 0 y 1.'),
+Q('¿Cuánto vale la sigmoide en z = 0?',['0','0,25','0,5','1'],2,'1/(1 + 1).'),
+Q('Cuando z crece mucho, p…',['Se acerca a 0','Se acerca a 0,5','Se acerca a 1','Supera 1'],2,'Nunca lo supera.')]},
+
+{n:14,eje:4,short:'Odds, logit y Odds Ratio',title:'Odds, logit y Odds Ratio',
+lead:'El idioma en el que habla la regresión logística. Es la parte que más se pregunta con números.',
+html:`${F(`Odds = ${FR('p','1 − p')} &nbsp;&nbsp;&nbsp; Logit = ln( ${FR('p','1 − p')} ) = β₀ + β₁x`)}
+${MINI([['Odds','La probabilidad de que el evento ocurra dividida por la de que no ocurra. Pueden ser mayores que 1. Con p = 0,75: odds = 0,75/0,25 = 3, o "3 a 1".'],['Logit (log-odds)','El logaritmo natural de las odds. Es lo que la regresión logística modela como una combinación lineal de los predictores. Con p = 0,8: odds = 4, logit ≈ 1,386.']])}
+${W('odds')}
+${TRAP('Decir que odds = 3 es "probabilidad 3". Odds de 3 corresponden a p = 3/4 = 0,75.')}
+<h3>Odds Ratio</h3>
+${F('OR = e<sup>β₁</sup>')}
+${D('El <b>Odds Ratio</b> es el factor por el que se <b>multiplican las odds</b> cuando el predictor aumenta una unidad, manteniendo constantes los demás.')}
+${T(['Coeficiente','OR','Lectura'],[['β₁ > 0','> 1','Aumenta las odds: factor de riesgo o incentivo'],['β₁ = 0','= 1','Sin efecto'],['β₁ < 0','< 1','Disminuye las odds: factor de protección']])}
+<h3>Los dos ejemplos de la guía</h3>
+${MINI([['β₁ = 0,405','OR = e^0,405 ≈ <b>1,50</b>. Por cada unidad más del predictor, las odds se multiplican por 1,5: aumentan 50 %. Si las odds eran 2, pasan a 3.'],['OR = 0,65','Las odds se multiplican por 0,65: <b>disminuyen 35 %</b>. Es un factor de protección si el evento es perjudicial.']])}
+<p>Cambio porcentual en las odds = (OR − 1) × 100 %.</p>
+${TRAP('Decir que OR = 1,5 es "50 % más de probabilidad". Es 50 % más de <b>odds</b>. Y un OR menor que 1 no siempre es bueno: depende de cuál sea el evento.')}
+${W('sortOR')}`,
+coloquio:'Las odds son p sobre uno menos p: la probabilidad de que ocurra dividida por la de que no ocurra. El logit es su logaritmo y se modela como combinación lineal de los predictores. El Odds Ratio es e elevado al coeficiente: con beta 0,405 da 1,5, las odds aumentan un 50 % por unidad. Un OR de 0,65 las reduce 35 %: es protector.',
+links:[13,15],
+quiz:[Q('Si p = 0,8, ¿cuánto valen las odds?',['0,8','1,25','4','8'],2,'0,8 / 0,2 = 4.'),
+Q('β₁ = 0,405. ¿Cuál es el Odds Ratio?',['0,405','0,67','1,50','4,05'],2,'e^0,405 ≈ 1,5.'),
+Q('Un OR = 0,65 para un evento perjudicial es un factor de…',['Riesgo','Protección','Sin efecto','Confusión'],1,'Reduce las odds en 35 %.'),
+Q('¿Cuánto vale el logit cuando p = 0,5?',['0','0,5','1','No existe'],0,'Odds = 1 y ln(1) = 0.')]},
+
+{n:15,eje:4,short:'Efecto marginal y significancia',title:'Efecto marginal, Wald y Pseudo R²',
+lead:'Cómo cambia la probabilidad, qué predictores importan y qué tan bien ajusta el modelo completo.',
+html:`<h3>El efecto marginal no es constante</h3>
+${F(`${FR('∂p','∂x')} = β₁ · p · (1 − p)`)}
+<p>En una recta, la pendiente es la misma en todos lados. En la logística, la probabilidad sigue una curva en S, así que el efecto de X sobre p <b>depende de en qué punto de la curva estemos</b>.</p>
+${W('sigmoide')}
+${L(['El producto p(1 − p) es máximo en <b>p = 0,5</b>, donde vale 0,25.','Por eso la pendiente máxima es <b>β₁ / 4</b>, y ocurre en p = 0,5.','Cerca de 0 o de 1, la curva casi no se mueve.'])}
+<p>${EJ}Con β₁ = 2: en p = 0,1 la pendiente es 2 · 0,1 · 0,9 = 0,18; en p = 0,5 es 2/4 = 0,5.</p>
+<h3>Significancia de cada coeficiente: prueba de Wald</h3>
+${F(`z = ${FR('β̂','EE(β̂)')}`)}
+<p>La <b>prueba de Wald</b> evalúa si un coeficiente individual es distinto de cero (H₀: βⱼ = 0), manteniendo constantes los demás. Otra vez señal sobre ruido. ${EJ}β̂ = 0,8 y EE = 0,2 dan z = 4: fuerte evidencia contra β = 0.</p>
+<h3>Evaluación global del modelo</h3>
+${MINI([['Test de razón de verosimilitud (LLR)','Evalúa si el modelo completo supera al modelo nulo. H₀: todos los coeficientes son cero.'],['Pseudo R² de McFadden','1 − LL del modelo / LL del modelo nulo. Mide la ganancia frente al modelo que solo tiene intercepto.']])}
+<p><b>Cómo leer McFadden:</b> va de 0 a 1, pero sus valores son mucho más bajos que los de un R² lineal. Entre <b>0,2 y 0,4</b> ya se considera un ajuste excelente. ${EJ}LL del modelo = −60 y LL nulo = −100 dan 1 − 60/100 = 0,40.</p>
+${TRAP('Interpretar el Pseudo R² como "porcentaje de varianza explicada" o como porcentaje de aciertos. No equivale al R² lineal.')}`,
+coloquio:'El efecto marginal no es constante porque la probabilidad sigue una sigmoide y no una recta: vale beta uno por p por uno menos p. Es máximo en p igual a 0,5, donde equivale a beta uno sobre cuatro. La prueba de Wald evalúa cada coeficiente, y el Pseudo R cuadrado de McFadden compara el modelo con el nulo: entre 0,2 y 0,4 ya es excelente.',
+links:[13,14,16],
+quiz:[Q('¿En qué valor de p es máxima la pendiente de la curva logística?',['0','0,25','0,5','1'],2,'Allí p(1 − p) = 0,25.'),
+Q('Con β₁ = 2, ¿cuánto vale la pendiente máxima?',['2','1','0,5','0,25'],2,'β₁ / 4.'),
+Q('¿Qué prueba evalúa un coeficiente individual en logística?',['Levene','Wald','Tukey','Shapiro-Wilk'],1,'z = β̂ / EE(β̂).'),
+Q('Un Pseudo R² de McFadden de 0,30 indica…',['Un ajuste pobre','Un ajuste excelente','30 % de aciertos','Sobreajuste'],1,'Entre 0,2 y 0,4 se considera muy bueno.')]},
+
+{n:16,eje:5,short:'Matriz de confusión y métricas',title:'Matriz de confusión y métricas de clasificación',
+lead:'Cuatro casilleros de los que salen todas las métricas. Y por qué el porcentaje de aciertos puede mentir.',
+html:`${T(['Sigla','Nombre','El modelo dijo','La realidad era','Es un…'],[['VP','Verdadero positivo','Positivo','Positivo','Acierto: detección'],['VN','Verdadero negativo','Negativo','Negativo','Acierto'],['FP','Falso positivo','Positivo','Negativo','Error tipo I: falsa alarma'],['FN','Falso negativo','Negativo','Positivo','Error tipo II: omisión']])}
+<p>${EJ}Filtro de spam. FP: un correo legítimo bloqueado. FN: un spam que llega a la bandeja de entrada.</p>
+${W('matriz')}
+${T(['Métrica','Fórmula','Qué mide'],[['Accuracy (exactitud)','(VP + VN) / Total','Proporción total de aciertos'],['Sensibilidad / Recall / TPR','VP / (VP + FN)','De los positivos reales, cuántos detecté. Busca minimizar los <b>falsos negativos</b>'],['Especificidad / TNR','VN / (VN + FP)','De los negativos reales, cuántos reconocí'],['Tasa de falsos positivos (FPR)','FP / (FP + VN) = 1 − Especificidad','De los negativos reales, cuántos generaron falsa alarma'],['Precisión / PPV','VP / (VP + FP)','De mis alertas, cuántas eran reales'],['F1-Score','2 · P · R / (P + R)','Media armónica de Precisión y Recall']])}
+<h3>Por qué la Accuracy engaña con desbalance</h3>
+<p>Si 950 de 1.000 clientes pagan, un modelo que predice siempre "paga" tiene Accuracy 95 % y Recall 0 % para los incumplidores: no detecta ni uno.</p>
+<h3>Por qué F1 usa la media armónica</h3>
+<p>Porque castiga el desequilibrio. Con Precisión 0,9 y Recall 0,1, el promedio simple da 0,5, pero F1 = 2 · 0,09 / 1 = 0,18. Exige que las dos sean buenas. F1 no usa los VN.</p>`,
+coloquio:'VP: predijo positivo y era positivo. VN: predijo negativo y era negativo. FP: predijo positivo pero era negativo. FN: predijo negativo pero era positivo. Recall es VP sobre VP más FN y busca minimizar falsos negativos; especificidad es VN sobre VN más FP, y es uno menos la tasa de falsos positivos. Accuracy engaña si una clase domina.',
+links:[5,15,17],
+quiz:[Q('VP = 15, VN = 70, FP = 10, FN = 5. ¿Cuánto vale la especificidad?',['75 %','87,5 %','85 %','60 %'],1,'70 / (70 + 10).'),
+Q('Con esos datos, ¿cuánto vale la FPR?',['12,5 %','25 %','40 %','5 %'],0,'1 − 0,875, o 10/80.'),
+Q('Un falso negativo corresponde a un error de…',['Tipo I','Tipo II','Muestreo','Redondeo'],1,'Es la omisión: β.'),
+Q('Precisión 0,9 y Recall 0,1. ¿Cuánto vale F1?',['0,50','0,18','0,90','0,09'],1,'2·0,9·0,1 / (0,9 + 0,1).')]},
+
+{n:17,eje:5,short:'ROC, AUC, umbral y Youden',title:'Curva ROC, AUC, umbral e índice de Youden',
+lead:'Cómo evaluar el clasificador sin atarse a un umbral, y cómo elegir después el mejor punto de corte.',
+html:`${D('La <b>curva ROC</b> grafica la <b>sensibilidad (TPR)</b> en el eje Y contra la <b>tasa de falsos positivos (FPR = 1 − especificidad)</b> en el eje X, para todos los umbrales posibles.')}
+${W('umbral')}
+${L(['Cada punto de la curva es un umbral.','La diagonal es un clasificador que adivina al azar.','El punto ideal es la esquina superior izquierda.'])}
+<h3>AUC</h3>
+<p>El <b>área bajo la curva</b> resume la capacidad de discriminar, sin depender del umbral. AUC = 0,5 es azar; AUC = 1 es separación perfecta.</p>
+${D('<b>AUC = 0,89</b> significa que, si tomo al azar un positivo y un negativo, el modelo le asigna una puntuación más alta al positivo aproximadamente el 89 % de las veces.')}
+${TRAP('Leer AUC = 0,89 como "89 % de aciertos". Mide capacidad de ordenar, no Accuracy.')}
+<h3>Por qué 0,50 falla con eventos poco frecuentes</h3>
+<p>Si la prevalencia es baja (por ejemplo 5 %), muy pocos casos llegan a una probabilidad estimada de 0,5. Con el umbral estándar, la mayoría de los positivos reales queda por debajo del corte: <b>muchísimos falsos negativos</b>. Probalo arriba: bajá la prevalencia y mirá el Recall con umbral 0,5.</p>
+<p>${EJ}Un incumplidor con puntuación 0,40 se pierde con umbral 0,50, pero se detecta con 0,30. Bajar el umbral tampoco es gratis: aumentan las falsas alarmas.</p>
+<h3>Índice de Youden</h3>
+${F('J = Sensibilidad + Especificidad − 1 = TPR − FPR')}
+<p>El <b>índice de Youden</b> elige el umbral que maximiza J: el punto de la curva ROC más alejado, en vertical, de la diagonal del azar.</p>
+<p>${EJ}Con umbrales 0,3 / 0,5 / 0,7 y J = 0,50 / 0,60 / 0,45, se elige 0,5. Es un criterio estadístico: si un falso negativo cuesta mucho más que un falso positivo, puede convenir otro umbral.</p>`,
+coloquio:'En la curva ROC el eje X es la tasa de falsos positivos, uno menos especificidad, y el eje Y es la sensibilidad; cada punto es un umbral. AUC 0,89 significa 89 % de probabilidad de puntuar más alto a un positivo que a un negativo, no 89 % de aciertos. Con eventos raros el umbral 0,5 genera muchos falsos negativos; Youden maximiza sensibilidad más especificidad menos uno.',
+links:[15,16],
+quiz:[Q('¿Qué va en el eje X de la curva ROC?',['Sensibilidad','Precisión','Tasa de falsos positivos','Umbral'],2,'FPR = 1 − especificidad.'),
+Q('Sensibilidad 0,80 y especificidad 0,70. ¿Cuánto vale J?',['1,50','0,50','0,10','0,56'],1,'0,80 + 0,70 − 1.'),
+Q('Con prevalencia del 5 %, el umbral 0,50 suele producir…',['Muchos falsos positivos','Muchos falsos negativos','AUC = 1','Accuracy baja'],1,'Pocos positivos superan el corte.'),
+Q('AUC = 0,5 corresponde a…',['Un modelo perfecto','Un modelo que no discrimina mejor que el azar','50 % de Recall','Umbral 0,5'],1,'Es la diagonal.')]},
+
+{n:18,eje:6,short:'Reglas de probabilidad y Bayes',title:'Repaso: reglas de probabilidad y teorema de Bayes',
+lead:'La base de todo lo anterior, con los ejercicios de la práctica de la Unidad II (parte a).',
+html:`${D('El <b>espacio muestral</b> es el conjunto de todos los resultados posibles. Con resultados igualmente probables: P(A) = casos favorables / casos posibles.')}
+<p>${EJ}Tres monedas: 8 resultados posibles. P(al menos una cara) = 1 − P(ninguna) = 1 − 1/8 = 7/8.</p>
+${TRAP('Al tirar dos monedas, decir que 0, 1 o 2 caras valen 1/3 cada una. Los resultados igualmente probables son CC, CX, XC, XX: P(0) = 1/4, P(1) = 2/4, P(2) = 1/4.')}
+${T(['Regla','Fórmula','Cuándo'],[['Complemento','P(no A) = 1 − P(A)','"Al menos uno", "ninguno"'],['Suma','P(A o B) = P(A) + P(B) − P(A y B)','Unión. Si son excluyentes, P(A y B) = 0'],['Condicional','P(A | B) = P(A y B) / P(B)','Se sabe que B ocurrió'],['Producto','P(A y B) = P(A) · P(B | A)','Intersección. Si son independientes: P(A) · P(B)']])}
+${MINI([['Mutuamente excluyentes','No pueden ocurrir a la vez: P(A y B) = 0.'],['Independientes','Que ocurra uno no cambia la probabilidad del otro: P(A | B) = P(A).']])}
+<h3>El ejercicio de los pasajes</h3>
+${T(['','Mujer','Varón','Total'],[['Fumador','10','25','35'],['No fumador','30','35','65'],['Total','40','60','100']])}
+${L(['<b>Marginal:</b> P(mujer) = 40/100 = 0,40.','<b>Conjunta</b> (regla del producto): P(varón y fumador) = 25/100 = 0,25.','<b>Unión</b> (regla de la suma): P(mujer o fumador) = 0,40 + 0,35 − 0,10 = 0,65.','<b>Condicional:</b> P(fumadora | mujer) = 10/40 = 0,25.','<b>Suceso cierto:</b> P(fumador o no fumador) = 1.'])}
+${W('sortSuc')}
+<h3>Probabilidad total y Bayes</h3>
+${F(`P(A | B) = ${FR('P(B | A) · P(A)','P(B)')}`)}
+<p>La <b>probabilidad total</b> suma todos los caminos que llevan a B. ${EJ}Televisores: 0,50 · 0,25 + 0,30 · 0,20 + 0,20 · 0,10 = 0,205 necesita reparación.</p>
+${W('bayes')}`,
+coloquio:'Para "A o B" sumo las probabilidades y resto la intersección; para "A y B" multiplico, usando la condicional si no son independientes. Dos sucesos son excluyentes si no pueden ocurrir juntos, e independientes si uno no cambia la probabilidad del otro. Bayes permite invertir una probabilidad condicional usando la probabilidad total.',
+links:[19,5,16],
+quiz:[Q('P(A) = 0,458, P(B) = 0,54 y P(A y B) = 0,30. ¿Cuánto vale P(A o B)?',['0,998','0,698','0,30','0,247'],1,'0,458 + 0,54 − 0,30. Es el ejercicio del alquiler de autos.'),
+Q('Dos sucesos son mutuamente excluyentes si…',['P(A y B) = 0','P(A | B) = P(A)','P(A) = P(B)','P(A o B) = 1'],0,'No pueden ocurrir a la vez.'),
+Q('En la tabla de pasajes, P(mujer | fumador) vale…',['10/40','10/35','10/100','35/100'],1,'El universo se reduce a los 35 fumadores.'),
+Q('Dos clientes independientes pagan en término con p = 0,82. P(al menos uno paga) es…',['0,6724','0,82','0,9676','0,18'],2,'1 − 0,18².')]},
+
+{n:19,eje:6,short:'Binomial y normal',title:'Repaso: variable aleatoria, binomial y normal',
+lead:'Las dos distribuciones que sostienen la inferencia, con los ejercicios de la práctica (parte b).',
+html:`${D('Una <b>variable aleatoria</b> asigna un número a cada resultado de un experimento. Su <b>esperanza</b> es el promedio ponderado por las probabilidades: E(X) = Σ x · P(x).')}
+<p>${EJ}Recuperación de una inversión: 0·0,20 + 10·0,25 + 15·0,30 + 25·0,15 + 50·0,10 = 15,75. P(al menos $15) = 0,30 + 0,15 + 0,10 = 0,55.</p>
+<h3>Distribución binomial</h3>
+<p>Cuenta la cantidad de éxitos en <b>n ensayos independientes</b>, cada uno con solo dos resultados y la misma probabilidad de éxito p.</p>
+${F('P(X = k) = C(n, k) · p<sup>k</sup> · (1 − p)<sup>n − k</sup> &nbsp;&nbsp; E(X) = n·p &nbsp;&nbsp; Var(X) = n·p·(1 − p)')}
+${W('binomial')}
+${T(['Dice el enunciado','Se calcula'],[['"Exactamente k"','P(X = k)'],['"A lo sumo k", "no más de k", "cuanto mucho k"','P(X ≤ k)'],['"Al menos k", "por lo menos k"','P(X ≥ k) = 1 − P(X ≤ k − 1)'],['"Más de k"','P(X > k) = 1 − P(X ≤ k)'],['"Entre a y b" (incluidos)','P(X ≤ b) − P(X ≤ a − 1)']])}
+<h3>Distribución normal</h3>
+<p>Continua, simétrica y con forma de campana. Queda definida por su media μ y su desvío σ. Para calcular probabilidades se <b>estandariza</b>:</p>
+${F(`z = ${FR('x − μ','σ')}`)}
+${W('normal')}
+${L(['<b>P(X &gt; μ) = 0,5</b> siempre, por simetría.','<b>Problema inverso:</b> si piden el valor que deja el 90 % por debajo, se busca z = 1,28 y se despeja x = μ + z·σ. En el examen: 70 + 1,28 · 12 ≈ 85,4 minutos.','<b>Latas:</b> con μ = 326 y σ = 18, P(X &lt; 330) = P(z &lt; 0,22) ≈ 0,59.'])}
+<p>La normal es la que hace posible el módulo 1: por el Teorema Central del Límite, las medias muestrales se distribuyen (aproximadamente) así.</p>`,
+coloquio:'La binomial cuenta éxitos en n ensayos independientes con la misma probabilidad p; su esperanza es n por p y su varianza n por p por uno menos p. La normal es continua y simétrica: para calcular probabilidades estandarizo con z igual a x menos mu sobre sigma. Alrededor del 68, 95 y 99,7 % de los datos cae a uno, dos y tres desvíos de la media.',
+links:[18,2,4],
+quiz:[Q('En una binomial con n = 10 y p = 0,2, la esperanza es…',['0,2','2','1,6','8'],1,'n·p.'),
+Q('"Por lo menos 2" se calcula como…',['P(X ≤ 2)','1 − P(X ≤ 1)','1 − P(X ≤ 2)','P(X = 2)'],1,'El complemento de "0 o 1".'),
+Q('X ~ N(70; 12). ¿Cuánto vale z para x = 85?',['1,25','0,85','15','1,5'],0,'(85 − 70) / 12.'),
+Q('¿Qué porcentaje de una normal cae en μ ± 2σ?',['68 %','90 %','95 %','99,7 %'],2,'Regla empírica.')]}
+];
+
+const B=(m,q,a,t,r)=>[m,q,a,t,r];
+const BANK=[
+B(1,'¿Cuál es la diferencia conceptual fundamental entre un parámetro poblacional y un estimador muestral?','Un parámetro es una característica fija, aunque generalmente desconocida, de toda la población, como su media μ. Un estimador es una fórmula calculada con una muestra, como la media muestral, para aproximar ese parámetro.',1,'¿El parámetro cambia al tomar otra muestra? No. Lo que cambia es la estimación muestral.'),
+B(1,'En la estimación por intervalos de confianza, ¿qué representa el nivel de confianza (1 − α)?','Un 95 % de confianza significa que, si repitiéramos muchas veces el muestreo, alrededor del 95 % de los intervalos calculados incluirían el valor real de la población. No es una probabilidad del parámetro fijo.',3,'¿Qué representa α = 0,05? El nivel de error nominal del procedimiento: el 5 % de los intervalos no contendría al parámetro.'),
+B(1,'¿Qué establece el Teorema del Límite Central sobre la distribución de la media muestral para muestras grandes?','Dice que, bajo condiciones adecuadas y con muestras suficientemente grandes, la distribución de la media muestral se aproxima a una normal, aunque la población original no sea normal.',2,'¿Los datos originales deben ser normales? No necesariamente; se requiere independencia y varianza finita.'),
+B(1,'¿Cómo afecta el aumento del tamaño muestral (n) al error estándar de la media?','El error estándar es σ sobre raíz de n. Cuanto más grande es la muestra, menor es. Para reducirlo a la mitad necesitamos aproximadamente cuatro veces más datos.',2,'¿Qué pasa si cuadruplico n? El error estándar se reduce a la mitad.'),
+B(1,'¿Cuándo se debe utilizar la distribución t-Student en lugar de la Normal Estándar Z para estimar una media?','Usamos t de Student cuando la desviación estándar poblacional es desconocida y la estimamos con la muestra, especialmente con muestras pequeñas y datos aproximadamente normales.',3,'¿Cuándo se parece t a Z? Cuando aumentan los grados de libertad.'),
+B(1,'¿Por qué se utiliza p = 0,50 al calcular el tamaño muestral para estimar una proporción sin información previa?','Porque 0,50 maximiza el producto p(1 − p), la variabilidad de una proporción. Así calculamos un tamaño de muestra conservador cuando no sabemos la proporción real.',4,'¿Por qué no elegir p = 0,1 sin evidencia? Porque podría subestimar la variabilidad y el tamaño requerido.'),
+B(1,'¿Qué significa formalmente que un estimador estadístico sea insesgado?','Que su valor esperado coincide con el parámetro: E(estimador) = parámetro. Si repetimos el muestreo muchas veces, sus estimaciones promedian el valor real; no se desvía siempre hacia el mismo lado.',1,'¿Insesgado significa sin error? No. Puede tener variabilidad aunque su promedio sea correcto.'),
+B(1,'¿Qué condiciones empíricas deben cumplirse para aproximar la distribución de una proporción muestral mediante una Normal?','Necesitamos observaciones independientes y suficientes casos de ambos resultados. Como regla habitual, al menos diez éxitos y diez fracasos esperados: np ≥ 10 y n(1 − p) ≥ 10.',4,'¿Qué sucede con eventos extremadamente raros? Puede hacer falta una muestra mucho mayor o métodos exactos.'),
+B(2,'¿Cuáles son las hipótesis nula (H₀) y alternativa (H₁) en las pruebas de normalidad de Shapiro-Wilk o Kolmogorov-Smirnov?','En Shapiro-Wilk, la hipótesis nula dice que los datos siguen una distribución normal y la alternativa dice que no. Kolmogorov-Smirnov compara los datos con una distribución especificada, que puede ser la normal.',7,'¿p > 0,05 demuestra normalidad? No; solo indica evidencia insuficiente para rechazar H₀.'),
+B(2,'¿Por qué un tamaño de muestra muy grande puede ser problemático al interpretar el p-valor de una prueba de normalidad?','Con muestras muy grandes, las pruebas detectan desviaciones mínimas de la normalidad y pueden dar p-valores pequeños aunque la diferencia sea poco relevante en la práctica. Conviene complementar con gráficos y contexto.',7,'¿Qué conviene revisar además del p-valor? El Q-Q plot, el histograma y las necesidades del análisis.'),
+B(2,'¿Qué utilidad principal aporta el Q-Q plot frente a las pruebas formales de normalidad?','El Q-Q plot compara cuantiles observados con los de una distribución teórica. Si los puntos siguen aproximadamente una recta, hay compatibilidad visual; las desviaciones revelan asimetría, colas pesadas o valores extremos.',7,'¿Qué muestra una línea diagonal? Compatibilidad aproximada con la distribución teórica.'),
+B(2,'Conceptual y matemáticamente, ¿qué representa el estadístico t en una prueba t de Student?','Mide cuántos errores estándar separan la diferencia observada de la planteada por la hipótesis nula: es señal sobre ruido. En una muestra: t = (media − μ₀) / (s / √n).',6,'¿Un t grande siempre implica un efecto importante? No; también depende del tamaño de muestra y del error estándar.'),
+B(2,'¿En qué consiste la "trampa de la multiplicidad" al realizar múltiples pruebas t para comparar 3 o más grupos?','Al hacer muchas pruebas t aumenta la probabilidad de obtener al menos un falso positivo. Para comparar tres o más medias se usa primero ANOVA y, si corresponde, comparaciones múltiples controladas.',8,'¿Qué problema controla Tukey? El error familiar al comparar varios pares de medias.'),
+B(2,'¿Cuál es la función del test ANOVA ómnibus en la comparación de múltiples medias poblacionales?','ANOVA contrasta si todas las medias poblacionales son iguales frente a la alternativa de que al menos una difiere. Un resultado significativo no indica por sí solo cuáles grupos son diferentes.',8,'¿Un ANOVA significativo dice qué grupos difieren? No; hacen falta comparaciones post-hoc.'),
+B(2,'¿Qué evalúa la prueba de Levene en el contexto previo a un ANOVA unidireccional?','Levene evalúa si las varianzas de los grupos pueden considerarse iguales. Sirve para revisar el supuesto de homogeneidad de varianzas antes de aplicar el ANOVA clásico.',8,'¿Qué hacemos si Levene rechaza H₀? Considerar el ANOVA de Welch.'),
+B(2,'Si se viola el supuesto de homocedasticidad en ANOVA, ¿qué alternativa paramétrica ajustada se debe emplear?','Cuando no hay igualdad de varianzas, la alternativa paramétrica habitual es el ANOVA de Welch, que ajusta el procedimiento para varianzas desiguales.',8,'¿Welch exige varianzas iguales? No; está diseñado para no requerirlas.'),
+B(2,'¿Cuál es el propósito del test de comparación múltiple post-hoc de Tukey HSD?','Tukey HSD realiza comparaciones por pares entre medias después del ANOVA y controla el error familiar por múltiples comparaciones. Permite identificar qué pares de grupos difieren.',8,'¿Para qué sirve un post-hoc? Para identificar qué pares de grupos difieren.'),
+B(2,'¿Qué prueba no paramétrica sustituye a la t de Student para dos muestras independientes cuando no se cumple la normalidad?','La prueba de Mann-Whitney U. Compara distribuciones usando rangos; no siempre equivale a comparar medianas sin supuestos adicionales.',6,'¿Mann-Whitney compara siempre medianas? Solo si las distribuciones tienen la misma forma.'),
+B(3,'¿Cuál es la diferencia fundamental entre el análisis de correlación y el de regresión?','La correlación cuantifica la fuerza y dirección de una asociación, sin distinguir variable explicativa y respuesta. La regresión modela una variable respuesta en función de predictores para explicar o predecir. Ninguna prueba causalidad por sí sola.',9,'¿Correlación implica causalidad? No; pueden intervenir otras variables.'),
+B(3,'¿Qué mide exactamente el coeficiente de correlación de Pearson (r) y cuál es su rango?','Pearson r mide la fuerza y dirección de la asociación lineal entre dos variables cuantitativas. Varía entre −1 y 1: cerca de 1 es positiva fuerte; cerca de −1, negativa fuerte; cerca de 0, poca asociación lineal.',9,'¿Qué significa r = 0? Que no hay asociación lineal, aunque puede existir una relación curva.'),
+B(3,'En ŷ = β₀ + β₁x, ¿cómo se interpreta geométrica y conceptualmente la pendiente (β₁)?','La pendiente indica cuánto cambia el valor esperado de Y cuando X aumenta una unidad. Geométricamente es la inclinación de la recta: positiva si sube y negativa si baja.',10,'¿Qué significa β₁ negativo? Que la predicción disminuye al aumentar X.'),
+B(3,'¿Qué representa el intercepto (β₀) y cuándo tiene significado práctico?','El intercepto es el valor predicho de Y cuando X = 0. Tiene interpretación práctica si cero es un valor posible y relevante; de lo contrario es principalmente un parámetro matemático.',10,'¿El intercepto siempre tiene significado? No; puede ser una extrapolación sin sentido.'),
+B(3,'¿En qué consiste el principio de Mínimos Cuadrados Ordinarios (OLS/MCO)?','Mínimos Cuadrados Ordinarios elige los coeficientes que minimizan la suma de los residuos al cuadrado. Así ajusta la recta que reduce los errores cuadráticos en la muestra.',10,'¿Por qué se elevan al cuadrado? Para que los signos no se cancelen y para penalizar los errores grandes.'),
+B(3,'¿Qué mide el coeficiente de determinación (R²) y cómo se interpreta un R² = 0,81?','R² mide la proporción de variabilidad de Y explicada por el modelo respecto de la media. R² = 0,81 significa que el modelo explica el 81 % de esa variabilidad en los datos evaluados; no demuestra causalidad.',11,'¿R² puede ser negativo? Sí, fuera de muestra, si el modelo es peor que predecir la media.'),
+B(3,'¿Qué es un residuo (eᵢ) en regresión lineal y qué papel cumple en el diagnóstico del modelo?','Un residuo es la diferencia entre el valor observado y el predicho. Analizar sus patrones ayuda a detectar no linealidad, varianza desigual, observaciones extremas u otros problemas del modelo.',11,'¿Qué esperamos en un gráfico de residuos? Una nube sin patrón y con dispersión estable.'),
+B(3,'¿Qué establece el supuesto de homocedasticidad de los errores?','Que la varianza de los errores es constante para los distintos valores de los predictores. Si falla, los errores estándar y las pruebas clásicas pueden ser poco confiables.',11,'¿Qué forma sugiere heterocedasticidad? Un abanico o embudo en los residuos.'),
+B(3,'¿Por qué se debe utilizar el R² ajustado en lugar del R² convencional en regresión múltiple?','R² nunca disminuye al agregar predictores, incluso inútiles. El R² ajustado penaliza incorporar variables y permite comparar modelos con distinta cantidad de predictores de manera más justa.',12,'¿El R² ajustado puede bajar? Sí, cuando la mejora no compensa la complejidad.'),
+B(3,'¿Qué es la multicolinealidad y qué efecto negativo produce sobre las estimaciones?','Multicolinealidad significa que dos o más predictores están muy relacionados. Aumenta la incertidumbre y vuelve inestables los coeficientes. Se puede revisar el VIF y eliminar, combinar o regularizar variables.',12,'¿Cómo reducir la multicolinealidad? Quitar o combinar predictores redundantes, o usar regularización.'),
+B(4,'¿Por qué la regresión lineal por OLS es inadecuada para modelar una respuesta binaria (0/1)?','Porque puede predecir valores menores que 0 o mayores que 1, y sus supuestos de error y varianza normalmente no se cumplen. La logística modela probabilidades entre 0 y 1.',13,'¿OLS nunca se usa con respuestas binarias? Existe el modelo de probabilidad lineal, pero tiene limitaciones.'),
+B(4,'¿Qué función matemática transforma el predictor lineal en una probabilidad acotada entre 0 y 1?','La función sigmoide: p = 1 / (1 + e^(−z)), donde z es la combinación lineal de predictores. Transforma cualquier número real en una probabilidad entre cero y uno.',13,'¿Qué ocurre cuando z crece? La probabilidad se acerca a 1.'),
+B(4,'¿Qué es el "logit" o log-odds en la regresión logística?','El logit es el logaritmo de las odds: ln[p / (1 − p)]. En regresión logística se modela como una combinación lineal de predictores.',14,'¿Qué implica logit = 0? Probabilidad 0,5.'),
+B(4,'¿Cómo se define matemáticamente el Odds de un evento cuya probabilidad es p?','Las odds son p / (1 − p): la probabilidad de que ocurra dividida por la probabilidad de que no ocurra. Si p = 0,75, las odds son 3 a 1.',14,'¿Odds = 3 significa p = 3? No; corresponde a p = 3/4 = 0,75.'),
+B(4,'Si el coeficiente β₁ en regresión logística es 0,405, ¿cuál es su Odds Ratio y cómo se interpreta?','El Odds Ratio es e^0,405 ≈ 1,50. Por cada unidad adicional de ese predictor, manteniendo los demás constantes, las odds del evento se multiplican por 1,5: aumentan un 50 %.',14,'¿Es un aumento del 50 % en probabilidad? No, es un aumento del 50 % en odds.'),
+B(4,'Si un predictor presenta un Odds Ratio de 0,65, ¿es un factor de riesgo o de protección?','Un OR de 0,65 indica que, por cada unidad adicional del predictor, las odds se multiplican por 0,65, es decir disminuyen 35 %. Es protector si el evento definido es perjudicial.',14,'¿OR < 1 siempre es beneficioso? No; depende de cuál sea el evento positivo.'),
+B(4,'¿Por qué la pendiente (efecto marginal) sobre la probabilidad no es constante en la regresión logística?','Porque la probabilidad es una función sigmoide, no una recta. El efecto marginal de X sobre p depende de la probabilidad actual: β₁ · p(1 − p), por lo que cambia según el punto.',15,'¿Dónde cambia más la probabilidad? Cerca de p = 0,5.'),
+B(4,'¿En qué punto de la probabilidad predicha la pendiente marginal es máxima y a qué equivale?','El máximo de p(1 − p) ocurre en p = 0,5, donde vale 0,25. Por eso el efecto marginal máximo es β₁ / 4.',15,'¿Y si β₁ es negativo? La pendiente es negativa; su magnitud máxima es |β₁| / 4.'),
+B(4,'¿Qué prueba estadística evalúa la significancia individual de los coeficientes en una regresión logística?','La prueba de Wald: compara cada coeficiente con su error estándar para ver si difiere de cero. También puede usarse una prueba de razón de verosimilitudes comparando modelos.',15,'¿p < 0,05 implica un efecto grande? No; significancia estadística no es relevancia práctica.'),
+B(4,'¿Qué representa el Pseudo R² de McFadden y qué rango indica un ajuste excelente?','Compara la log-verosimilitud del modelo con la del modelo nulo: 1 − LL modelo / LL nulo. Valores aproximados de 0,2 a 0,4 se consideran muy buenos; no equivale al R² lineal.',15,'¿Qué es el modelo nulo? El modelo con solo el intercepto.'),
+B(5,'¿Cuáles son los cuatro componentes de una matriz de confusión binaria?','VP: predijo positivo y era positivo. VN: predijo negativo y era negativo. FP: predijo positivo pero era negativo. FN: predijo negativo pero era positivo.',16,'¿Qué es un falso negativo? Un positivo real que fue clasificado como negativo.'),
+B(5,'¿Por qué la Exactitud (Accuracy) resulta engañosa en datos fuertemente desbalanceados?','Si una clase domina, predecirla siempre puede dar una Accuracy alta sin identificar los casos minoritarios. Por eso conviene revisar la matriz de confusión, Precisión, Recall y F1.',16,'¿Qué métrica revela los positivos omitidos? El Recall.'),
+B(5,'¿Cómo se define la Sensibilidad (Recall) y qué tipo de errores busca minimizar?','Recall o sensibilidad es VP / (VP + FN): la proporción de positivos reales detectados. Un Recall alto busca minimizar los falsos negativos, importante cuando omitir un caso es costoso.',16,'¿Recall = 1 implica cero falsos positivos? No; solo que no se omitieron positivos reales.'),
+B(5,'¿Cómo se define la Especificidad y cuál es su relación con la Tasa de Falsos Positivos (FPR)?','Especificidad es VN / (VN + FP): la proporción de negativos reales identificados. La tasa de falsos positivos es FP / (FP + VN), por lo tanto especificidad = 1 − FPR.',16,'¿Qué mide la FPR? La proporción de negativos reales clasificados como positivos.'),
+B(5,'¿Qué es el F1-Score y por qué utiliza la media armónica en lugar del promedio simple?','F1 combina Precisión y Recall mediante la media armónica: 2PR / (P + R). Penaliza más el desequilibrio entre ambas que un promedio aritmético, por eso requiere que las dos sean buenas.',16,'¿F1 incluye directamente a los VN? No; usa VP, FP y FN.'),
+B(5,'¿Qué representan el eje X y el eje Y en una Curva ROC?','El eje X es la tasa de falsos positivos, FPR = 1 − especificidad; el eje Y es la tasa de verdaderos positivos, TPR = Recall. Cada punto corresponde a un umbral diferente.',17,'¿Qué representa la diagonal? Una discriminación equivalente al azar.'),
+B(5,'¿Qué significa en términos prácticos un AUC-ROC igual a 0,89?','Que el modelo tiene aproximadamente 89 % de probabilidad de asignar una puntuación mayor a un positivo elegido al azar que a un negativo elegido al azar. Indica buena discriminación, no 89 % de Accuracy.',17,'¿Qué significa AUC = 0,5? Que no discrimina mejor que el azar.'),
+B(5,'¿Por qué fijar el umbral en 0,50 genera fallos graves cuando la prevalencia es muy baja (por ejemplo 5 %)?','Con eventos raros, usar 0,50 deja muchos casos positivos por debajo del umbral y genera falsos negativos. El umbral debe elegirse con validación, según prevalencia, costos y el equilibrio entre sensibilidad y falsas alarmas.',17,'¿Conviene siempre bajar el umbral? No; también aumentan las falsas alarmas.'),
+B(5,'¿Qué métrica u optimización permite encontrar el umbral óptimo en una curva ROC?','El índice de Youden: maximiza sensibilidad + especificidad − 1, equivalente a TPR − FPR. Es una opción para elegir el umbral, pero el punto óptimo real depende de los costos y prioridades del problema.',17,'¿Por qué podría elegirse otro umbral? Porque los costos de FP y FN pueden ser diferentes.')
+];
+
+const FORMULAS=[
+[1,[['Error estándar de la media','σ / √n ≈ s / √n','Incertidumbre de x̄'],['Error estándar de una proporción','√[ p(1 − p) / n ]','Incertidumbre de p̂'],['Intervalo de confianza','Estimador ± valor crítico × EE','Rango plausible para el parámetro'],['Tamaño de muestra (proporción)','n ≈ z² · p(1 − p) / E²','Cuántos casos necesito'],['Insesgadez','E(θ̂) = θ','El estimador acierta en promedio'],['Condición de normalidad de p̂','n·p ≥ 10 y n·(1 − p) ≥ 10','Poder usar la normal']]],
+[2,[['Estadístico t','(estimación − valor de H₀) / EE','Señal sobre ruido'],['Grados de libertad (una muestra)','n − 1','Qué curva t usar'],['Error familiar','1 − (1 − α)<sup>m</sup>','Riesgo de al menos un falso positivo en m pruebas'],['Estadístico F (ANOVA)','MS entre / MS dentro','Comparar tres o más medias'],['Regla de decisión','p ≤ α → se rechaza H₀','Toda prueba de hipótesis']]],
+[3,[['Recta de regresión','ŷ = β₀ + β₁x','Predecir Y a partir de X'],['Residuo','eᵢ = yᵢ − ŷᵢ','Diagnóstico del modelo'],['Criterio OLS','minimizar Σ (yᵢ − ŷᵢ)²','Elegir la mejor recta'],['R²','1 − SSE / SST','Proporción de variabilidad explicada'],['R² ajustado','1 − (1 − R²)(n − 1)/(n − k − 1)','Comparar modelos con distinta cantidad de predictores'],['VIF','1 / (1 − Rⱼ²)','Detectar multicolinealidad']]],
+[4,[['Sigmoide','p = 1 / (1 + e<sup>−z</sup>)','Pasar de z a probabilidad'],['Odds','p / (1 − p)','Chances a favor contra en contra'],['Logit','ln[ p / (1 − p) ] = β₀ + β₁x','Lo que el modelo hace lineal'],['Odds Ratio','OR = e<sup>β₁</sup>','Factor que multiplica las odds por unidad de X'],['Efecto marginal','β₁ · p(1 − p); máximo β₁/4 en p = 0,5','Cambio en la probabilidad'],['Wald','z = β̂ / EE(β̂)','Significancia de un coeficiente'],['Pseudo R² de McFadden','1 − LL modelo / LL nulo','Ajuste global; 0,2 a 0,4 es excelente']]],
+[5,[['Accuracy','(VP + VN) / Total','Aciertos totales; engaña con desbalance'],['Recall / Sensibilidad / TPR','VP / (VP + FN)','Positivos detectados'],['Especificidad / TNR','VN / (VN + FP)','Negativos reconocidos'],['FPR','FP / (FP + VN) = 1 − Especificidad','Falsas alarmas; eje X de la ROC'],['Precisión / PPV','VP / (VP + FP)','Confiabilidad de las alertas'],['F1','2 · P · R / (P + R)','Equilibrio entre Precisión y Recall'],['Índice de Youden','J = Sensibilidad + Especificidad − 1','Elegir el umbral']]],
+[6,[['Suma','P(A o B) = P(A) + P(B) − P(A y B)','Unión de sucesos'],['Condicional','P(A | B) = P(A y B) / P(B)','Cuando se sabe que B ocurrió'],['Bayes','P(A | B) = P(B | A) · P(A) / P(B)','Invertir una condicional'],['Binomial','C(n, k) · p<sup>k</sup> · (1 − p)<sup>n − k</sup>','k éxitos en n ensayos'],['Esperanza y varianza binomial','n·p &nbsp; y &nbsp; n·p·(1 − p)','Valor esperado y dispersión'],['Estandarización','z = (x − μ) / σ','Probabilidades con la normal']]]
+];
+
+const GLOS=[
+['Parámetro','Característica fija, y en general desconocida, de toda la población (μ, σ, p).',1],
+['Estimador','Regla calculada con una muestra para aproximar un parámetro (x̄, s, p̂).',1],
+['Distribución muestral','Distribución de un estadístico calculado en todas las muestras posibles de tamaño n.',1],
+['Estimador insesgado','Aquel cuyo valor esperado coincide con el parámetro.',1],
+['Teorema Central del Límite','Con n grande, la media muestral se distribuye aproximadamente normal, sea cual sea la población.',2],
+['Error estándar','Desviación estándar de la distribución muestral: la incertidumbre del estimador.',2],
+['Intervalo de confianza','Rango, estimador ± margen de error, construido con un nivel de confianza dado.',3],
+['Nivel de confianza','Proporción de intervalos que contendrían al parámetro si se repitiera el muestreo.',3],
+['Margen de error','Valor crítico por error estándar: la mitad del ancho del intervalo.',3],
+['t de Student','Distribución con colas más pesadas que Z; se usa cuando σ se estima con s.',3],
+['Grados de libertad','En una muestra, n − 1. Determinan la forma de la t.',3],
+['Hipótesis nula (H₀)','Afirmación de ausencia de efecto o igualdad; es la que se pone a prueba.',5],
+['Hipótesis alternativa (H₁)','Lo que el investigador busca mostrar.',5],
+['p-valor','Probabilidad de un resultado tan extremo o más que el observado, si H₀ fuera cierta.',5],
+['Nivel de significación (α)','Probabilidad máxima tolerada de error tipo I, fijada de antemano.',5],
+['Error tipo I','Rechazar H₀ siendo verdadera (falso positivo).',5],
+['Error tipo II','No rechazar H₀ siendo falsa (falso negativo).',5],
+['Potencia','1 − β: probabilidad de detectar un efecto que existe.',5],
+['Estadístico t','Señal sobre ruido: cuántos errores estándar separan lo observado de H₀.',6],
+['Muestras pareadas','Dos mediciones sobre los mismos sujetos, por ejemplo antes y después.',6],
+['Mann-Whitney U','Prueba no paramétrica para dos muestras independientes; usa rangos.',6],
+['Shapiro-Wilk','Prueba de normalidad. H₀: los datos son normales.',7],
+['Q-Q plot','Gráfico de cuantiles observados contra teóricos; normalidad si siguen la diagonal.',7],
+['Multiplicidad','Aumento del riesgo de falsos positivos al hacer muchas pruebas.',8],
+['ANOVA','Prueba ómnibus que contrasta si tres o más medias son iguales, con el estadístico F.',8],
+['Prueba de Levene','Evalúa si las varianzas de los grupos son iguales.',8],
+['ANOVA de Welch','Versión de ANOVA que no exige varianzas iguales.',8],
+['Tukey HSD','Prueba post-hoc que identifica qué pares de medias difieren.',8],
+['Homocedasticidad','Varianza constante (de los grupos o de los errores).',11],
+['Pearson (r)','Fuerza y dirección de la asociación lineal, entre −1 y 1.',9],
+['Pendiente (β₁)','Cambio esperado en Y por cada unidad que aumenta X.',10],
+['Intercepto (β₀)','Valor predicho de Y cuando X = 0.',10],
+['OLS / MCO','Mínimos cuadrados ordinarios: minimiza la suma de residuos al cuadrado.',10],
+['Residuo','Diferencia entre el valor observado y el predicho.',11],
+['R²','Proporción de la variabilidad de Y explicada por el modelo.',11],
+['R² ajustado','R² que penaliza la cantidad de predictores.',12],
+['Multicolinealidad','Predictores muy relacionados entre sí; vuelve inestables los coeficientes.',12],
+['VIF','Factor de inflación de la varianza; detecta multicolinealidad.',12],
+['Ridge / Lasso','Regularizaciones L2 y L1. Ridge contrae coeficientes; Lasso los puede anular.',12],
+['Sigmoide','Función en S que convierte un número real en una probabilidad.',13],
+['Odds','p / (1 − p).',14],
+['Logit','Logaritmo natural de las odds.',14],
+['Odds Ratio','e elevado al coeficiente: factor que multiplica las odds por unidad de X.',14],
+['Efecto marginal','Cambio en la probabilidad por unidad de X: β₁·p(1 − p).',15],
+['Prueba de Wald','Evalúa si un coeficiente logístico difiere de cero.',15],
+['Pseudo R² de McFadden','1 − LL modelo / LL nulo; 0,2 a 0,4 es un ajuste excelente.',15],
+['Matriz de confusión','Tabla de VP, VN, FP y FN.',16],
+['Sensibilidad (Recall)','VP / (VP + FN).',16],
+['Especificidad','VN / (VN + FP).',16],
+['Precisión (PPV)','VP / (VP + FP).',16],
+['F1-Score','Media armónica de Precisión y Recall.',16],
+['Curva ROC','TPR contra FPR para todos los umbrales.',17],
+['AUC','Área bajo la ROC: probabilidad de puntuar más alto a un positivo que a un negativo.',17],
+['Índice de Youden','J = sensibilidad + especificidad − 1; se maximiza para elegir el umbral.',17],
+['Sucesos excluyentes','No pueden ocurrir a la vez.',18],
+['Sucesos independientes','Que ocurra uno no cambia la probabilidad del otro.',18],
+['Teorema de Bayes','Permite invertir una probabilidad condicional.',18],
+['Distribución binomial','Cantidad de éxitos en n ensayos independientes con probabilidad p.',19],
+['Distribución normal','Continua, simétrica, en forma de campana; definida por μ y σ.',19],
+['Puntaje z','(x − μ) / σ: a cuántos desvíos de la media está un valor.',19]
+];
+
+/* ---------- estado y vistas ---------- */
+const byN=n=>TOPICS.find(t=>t.n===n);
+const U=SITE.units,UN=U.map((_,i)=>i).filter(i=>U[i]);
+let S={done:{},known:{},oral:{},best:0};
+try{Object.assign(S,JSON.parse(localStorage.getItem(SITE.key))||{})}catch(e){}
+const save=()=>{try{localStorage.setItem(SITE.key,JSON.stringify(S))}catch(e){}};
+const doneCount=()=>TOPICS.filter(t=>S.done[t.n]).length;
+const oralCount=()=>BANK.filter((_,i)=>S.oral[i]).length;
+const main=$('#main'),side=$('#side');
+const TOOLS=[['tarjetas','Tarjetas de repaso'],['quiz','Autoevaluación'],['oral','Simulador oral'],...(typeof FORMULAS!=='undefined'?[['formulas','Fórmulas clave']]:[]),['glosario','Glosario']];
+function renderSide(cur){
+  const d=doneCount();
+  side.innerHTML=`<a class="brand" href="#inicio">${SITE.name}<small>${SITE.sub}</small></a>
+  <div class="prog"><div class="prog-bar"><i style="width:${d/TOPICS.length*100}%"></i></div><small>${d} de ${TOPICS.length} temas estudiados</small></div>
+  <nav class="nav"><a href="#inicio" class="${cur==='inicio'?'on':''}">Mapa de la materia</a>
+  ${UN.map(e=>`<div class="eje-${e}"><h4>${U[e].n} · ${U[e].t}</h4>${TOPICS.filter(t=>t.eje===e).map(t=>`<a href="#tema-${t.n}" class="${cur==='tema-'+t.n?'on ':''}${S.done[t.n]?'done':''}"><span class="num">${t.n}</span><span>${t.short}</span><span class="ck" title="${S.done[t.n]?'Estudiado':'Pendiente'}"></span></a>`).join('')}</div>`).join('')}
+  <h4>Practicar</h4>${TOOLS.map(([h,t])=>`<a href="#${h}" class="${cur===h?'on':''}">${t}</a>`).join('')}</nav>
+  ${SITE.other.url?`<a class="switch" href="${SITE.other.url}" target="_blank" rel="noopener">Ir a la otra materia<b>${SITE.other.name} →</b></a>`:''}`;
+}
+function vInicio(){
+  const next=TOPICS.find(t=>!S.done[t.n])||TOPICS[0],d=doneCount();
+  main.innerHTML=`<div class="wrap wide">
+  <div class="hero"><div><p class="eyebrow">${SITE.eyebrow}</p><h1>${SITE.h1}</h1><p class="lead">${SITE.lead}</p>
+  <div class="row"><a class="btn acc" href="#tema-${next.n}">${d?'Seguir con':'Empezar por'} el tema ${next.n}</a><a class="btn ghost" href="#oral">Practicar el oral</a></div></div>
+  <div class="exam">${SITE.exam}</div></div>
+  ${SITE.hilo}
+  <h2>${SITE.unitsTitle}</h2>
+  <div class="ejes">${UN.map(e=>`<div class="ejecard eje-${e}"><p class="eyebrow">${U[e].n}</p><h3>${U[e].t}</h3><p>${U[e].q}</p>${TOPICS.filter(t=>t.eje===e).map(t=>`<a href="#tema-${t.n}"><span class="num">${t.n}</span><span>${t.short}</span>${S.done[t.n]?'<span class="ck">Listo</span>':''}</a>`).join('')}</div>`).join('')}</div>
+  <h2>Para practicar</h2>
+  <div class="tools"><a href="#oral"><b>Simulador oral</b><span>Las ${BANK.length} preguntas de la guía del profesor, con cronómetro de ${SITE.secs} segundos y respuesta modelo. Llevás ${oralCount()} sabidas.</span></a><a href="#quiz"><b>Autoevaluación</b><span>10 preguntas de opción múltiple al azar de un banco de ${TOPICS.reduce((s,t)=>s+t.quiz.length,0)}, con explicación.${S.best?` Tu mejor nota: ${S.best}/10.`:''}</span></a><a href="#tarjetas"><b>Tarjetas de repaso</b><span>${GLOS.length} conceptos para decir la definición antes de darla vuelta.</span></a>${typeof FORMULAS!=='undefined'?`<a href="#formulas"><b>Fórmulas clave</b><span>Todas las fórmulas en una sola hoja, con para qué sirve cada una.</span></a>`:''}<a href="#glosario"><b>Glosario</b><span>Buscá cualquier término y saltá al tema donde se explica.</span></a></div>
+  <h2>Una forma de estudiar con esta página</h2>
+  ${FLOW([['Leé el tema','y jugá con el gráfico o la calculadora.'],['Decí en voz alta','la frase "Para decir en el oral" sin mirarla.'],['Respondé','las preguntas del final.'],['Marcalo como estudiado','y seguí con el que le sigue.'],['Cerrá con el simulador','hasta responder cada pregunta en '+SITE.secs+' segundos.']])}
+  </div>`;
+}
+function vTema(n){
+  const t=byN(n),prev=byN(n-1),nxt=byN(n+1),qs=BANK.map((b,i)=>[b,i]).filter(x=>x[0][3]===n);
+  main.innerHTML=`<article class="wrap eje-${t.eje}"><p class="eyebrow">${U[t.eje].n} · Tema ${t.n} de ${TOPICS.length}</p><h1>${t.title}</h1><p class="lead">${t.lead}</p>${t.html}
+  <div class="coloquio"><small>Para decir en el oral</small><p>"${t.coloquio}"</p></div>
+  ${qs.length?`<h2>Preguntas de la guía del profesor sobre este tema</h2>${qs.map(([b])=>`<details><summary>${b[1]}</summary><p class="say">${b[2]}</p>${b[4]?`<p><b>Posible repregunta:</b> ${b[4]}</p>`:''}</details>`).join('')}`:''}
+  <p class="links" style="margin-top:1.4rem"><span>Se conecta con</span>${t.links.map(l=>`<a href="#tema-${l}">${byN(l).short}</a>`).join('')}</p>
+  <h2>Comprobá si lo entendiste</h2><div id="tq"></div>
+  <div class="foot"><button class="btn ${S.done[n]?'ghost':'acc'}" id="mark">${S.done[n]?'Estudiado · desmarcar':'Marcar como estudiado'}</button><span class="row" style="margin:0">${prev?`<a class="btn ghost" href="#tema-${prev.n}">← Tema ${prev.n}</a>`:''}${nxt?`<a class="btn" href="#tema-${nxt.n}">Tema ${nxt.n}: ${nxt.short} →</a>`:`<a class="btn" href="#oral">Ir al simulador →</a>`}</span></div></article>`;
+  $$('.w',main).forEach(w=>WIDGETS[w.dataset.w]&&WIDGETS[w.dataset.w](w));
+  t.quiz.forEach((q,i)=>$('#tq').appendChild(qCard(q,i+1)));
+  $('#mark').onclick=()=>{S.done[n]=!S.done[n];save();const b=$('#mark');b.className='btn '+(S.done[n]?'ghost':'acc');b.textContent=S.done[n]?'Estudiado · desmarcar':'Marcar como estudiado';renderSide('tema-'+n)};
+}
+function vTarjetas(){
+  let pend=false,i=0,flip=false,deck=shuffle(GLOS);
+  main.innerHTML=`<div class="wrap"><p class="eyebrow">Practicar</p><h1>Tarjetas de repaso</h1><p class="lead">Decí la definición en voz alta y después tocá la tarjeta para compararla.</p><div id="fc"></div></div>`;
+  const draw=()=>{
+    const list=pend?deck.filter(g=>!S.known[g[0]]):deck,kn=GLOS.filter(g=>S.known[g[0]]).length;
+    if(i>=list.length)i=0;
+    if(!list.length){$('#fc').innerHTML=`<div class="card"><p class="big">Ya sabés las ${GLOS.length}.</p><button class="btn" data-all>Ver todas de nuevo</button></div>`;$('[data-all]').onclick=()=>{pend=false;draw()};return}
+    const g=list[i];
+    $('#fc').innerHTML=`<div class="row"><span>${i+1} de ${list.length}</span><span class="pill ok">${kn} sabidas</span><label class="sp" style="display:flex;gap:8px;align-items:center;font-size:.9rem"><input type="checkbox" id="fc-p" ${pend?'checked':''}> Solo las que me faltan</label></div>
+    <button class="flash" aria-live="polite">${flip?`<small>${g[0]}</small><span class="back">${g[1]}</span>`:`<span class="term">${g[0]}</span><small>Tocá para ver la definición</small>`}</button>
+    <div class="row"><button class="btn ghost" data-p>← Anterior</button><button class="btn ghost" data-n>Siguiente →</button><span class="sp row" style="margin:0"><a class="btn ghost sm" href="#tema-${g[2]}">Ver en el tema ${g[2]}</a><button class="btn ${S.known[g[0]]?'ghost':'acc'}" data-k>${S.known[g[0]]?'Volver a repasar':'Ya la sé'}</button></span></div>`;
+    $('.flash').onclick=()=>{flip=!flip;draw()};
+    $('[data-p]').onclick=()=>{i=(i-1+list.length)%list.length;flip=false;draw()};
+    $('[data-n]').onclick=()=>{i=(i+1)%list.length;flip=false;draw()};
+    $('[data-k]').onclick=()=>{S.known[g[0]]=!S.known[g[0]];save();flip=false;if(!pend&&S.known[g[0]])i=(i+1)%list.length;draw()};
+    $('#fc-p').onchange=e=>{pend=e.target.checked;i=0;flip=false;draw()};
+  };draw();
+}
+function vQuiz(){
+  let eje=0;
+  main.innerHTML=`<div class="wrap"><p class="eyebrow">Practicar</p><h1>Autoevaluación</h1><p class="lead">Diez preguntas de opción múltiple al azar, con explicación. Elegí toda la materia o una sola parte.</p><div class="seg" id="qe"><button data-e="0" aria-pressed="true">Toda la materia</button>${UN.map(i=>`<button data-e="${i}" aria-pressed="false">${U[i].n}</button>`).join('')}</div><div id="qz"></div></div>`;
+  const start=()=>{
+    const pool=shuffle(TOPICS.filter(t=>!eje||t.eje===eje).flatMap(t=>t.quiz.map(q=>({...q,t})))).slice(0,10);let i=0,ok=0;const miss=new Set();
+    const next=()=>{
+      const z=$('#qz');
+      if(i>=pool.length){ if(!eje&&ok>S.best){S.best=ok;save()}
+        z.innerHTML=`<div class="card"><p class="eyebrow">Resultado</p><p class="big">${ok} de ${pool.length}</p><p>${ok>=pool.length*.9?'Muy bien. Pasá al simulador oral.':ok>=pool.length*.6?'Vas bien. Repasá los temas donde fallaste.':'Todavía falta. Volvé a los temas y probá de nuevo.'}</p>${miss.size?`<p class="links"><span>Para repasar</span>${[...miss].map(n=>`<a href="#tema-${n}">${byN(n).short}</a>`).join('')}</p>`:''}<p><button class="btn acc" data-again>Otras 10 preguntas</button></p></div>`;
+        $('[data-again]').onclick=start;return}
+      const q=pool[i];z.innerHTML=`<div class="row"><span>Pregunta ${i+1} de ${pool.length}</span><span class="pill ok">${ok} correctas</span><span class="sp chip">Tema ${q.t.n} · ${q.t.short}</span></div>`;
+      z.className='eje-'+q.t.eje;
+      z.appendChild(qCard(q,i+1,(good,card)=>{if(good)ok++;else miss.add(q.t.n);const b=document.createElement('button');b.className='btn';b.textContent=i+1<pool.length?'Siguiente':'Ver resultado';b.onclick=()=>{i++;next()};card.appendChild(b);b.focus()}));
+    };next();
+  };
+  $$('#qe button').forEach(b=>b.onclick=()=>{eje=+b.dataset.e;$$('#qe button').forEach(x=>x.setAttribute('aria-pressed',x===b));start()});start();
+}
+function vOral(){
+  let un=0,pend=false,cur=-1;
+  const bu=[...new Set(BANK.map(b=>b[0]))];
+  main.innerHTML=`<div class="wrap"><p class="eyebrow">Practicar</p><h1>Simulador oral</h1><p class="lead">${SITE.oralIntro}</p>
+  <div class="seg" id="ou"><button data-e="0" aria-pressed="true">Todas</button>${bu.map(i=>`<button data-e="${i}" aria-pressed="false">${U[i].n}</button>`).join('')}</div>
+  <div class="row"><button class="btn acc" id="ask">Sacar una pregunta</button><label style="display:flex;gap:8px;align-items:center;font-size:.9rem"><input type="checkbox" id="op"> Solo las que me faltan</label><span class="sp pill ok" id="oc"></span></div><div id="oq"></div>
+  <h2>Todas las preguntas de la guía</h2><p>Tocá una pregunta para ver la respuesta propuesta. Son respuestas de estudio, no las oficiales del profesor.</p><div id="ol"></div></div>`;
+  const cnt=()=>$('#oc').textContent=`${oralCount()} de ${BANK.length} sabidas`;
+  const list=()=>{$('#ol').innerHTML=bu.filter(u=>!un||u===un).map(u=>`<div class="eje-${u}"><h3>${U[u].n} · ${U[u].t}</h3>${BANK.map((b,i)=>b[0]===u?`<details><summary>${S.oral[i]?'<span class="pill ok">Sabida</span> ':''}${b[1]}</summary><p class="say">${b[2]}</p>${b[4]?`<p><b>Posible repregunta:</b> ${b[4]}</p>`:''}<p><a href="#tema-${b[3]}">Repasar el tema ${b[3]}: ${byN(b[3]).short}</a></p></details>`:'').join('')}</div>`).join('')};
+  const show=i=>{cur=i;const b=BANK[i],t=byN(b[3]);
+    $('#oq').innerHTML=`<div class="card eje-${b[0]}"><p class="eyebrow">${U[b[0]].n} · ${t.short}</p><p class="oral-q">${b[1]}</p><div data-t></div><details><summary>Ver la respuesta modelo</summary><p class="say">${b[2]}</p>${b[4]?`<p><b>Posible repregunta:</b> ${b[4]}</p>`:''}<p><a href="#tema-${t.n}">Repasar el tema ${t.n}</a></p></details><div class="row"><button class="btn ${S.oral[i]?'ghost':'acc'}" data-k>${S.oral[i]?'Volver a repasar':'La respondí bien'}</button><button class="btn" data-nx>Otra pregunta</button></div></div>`;
+    timer($('[data-t]',$('#oq')),SITE.secs);
+    $('[data-k]').onclick=()=>{S.oral[i]=!S.oral[i];save();cnt();list();show(i)};$('[data-nx]').onclick=ask};
+  const ask=()=>{ticks.forEach(clearInterval);ticks=[];let pool=BANK.map((b,i)=>i).filter(i=>(!un||BANK[i][0]===un)&&(!pend||!S.oral[i])&&i!==cur);
+    if(!pool.length){$('#oq').innerHTML=`<div class="card"><p class="big">No quedan preguntas pendientes acá.</p><p>Destildá "Solo las que me faltan" o elegí otra parte.</p></div>`;cur=-1;return}
+    show(pool[Math.floor(Math.random()*pool.length)])};
+  $('#ask').onclick=ask;$('#op').onchange=e=>pend=e.target.checked;
+  $$('#ou button').forEach(b=>b.onclick=()=>{un=+b.dataset.e;$$('#ou button').forEach(x=>x.setAttribute('aria-pressed',x===b));list()});
+  cnt();list();
+}
+function vFormulas(){
+  main.innerHTML=`<div class="wrap"><p class="eyebrow">Practicar</p><h1>Fórmulas clave</h1><p class="lead">Una hoja para repasar antes de entrar. Tapá la columna del medio y tratá de decir cada fórmula.</p>${FORMULAS.map(g=>`<div class="eje-${g[0]}"><h3>${U[g[0]].n} · ${U[g[0]].t}</h3>${T(['Concepto','Fórmula','Para qué sirve'],g[1])}</div>`).join('')}</div>`;
+}
+function vGlosario(){
+  main.innerHTML=`<div class="wrap"><p class="eyebrow">Practicar</p><h1>Glosario</h1><p class="lead">${GLOS.length} términos de la materia.</p><label for="gs" style="font-weight:600;font-size:.85rem;color:var(--muted)">Buscar un término</label><input class="search" id="gs" type="search" placeholder="${SITE.glosEj}"><dl class="glos" id="gl"></dl></div>`;
+  const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const draw=()=>{const k=norm($('#gs').value),l=[...GLOS].sort((a,b)=>a[0].localeCompare(b[0],'es')).filter(g=>norm(g[0]+' '+g[1]).includes(k));
+    $('#gl').innerHTML=l.length?l.map(g=>`<div class="eje-${byN(g[2]).eje}"><dt>${g[0]}</dt><dd>${g[1]} <a href="#tema-${g[2]}">Tema ${g[2]} →</a></dd></div>`).join(''):'<p>No hay términos con esa búsqueda. Probá con otra palabra.</p>'};
+  $('#gs').oninput=draw;draw();
+}
+function route(){
+  ticks.forEach(clearInterval);ticks=[];
+  let h=(location.hash||'#inicio').slice(1);const m=h.match(/^tema-(\d+)$/);
+  if(m&&byN(+m[1]))vTema(+m[1]);
+  else if(h==='tarjetas')vTarjetas();else if(h==='quiz')vQuiz();else if(h==='oral')vOral();else if(h==='glosario')vGlosario();
+  else if(h==='formulas'&&typeof FORMULAS!=='undefined')vFormulas();
+  else{h='inicio';vInicio()}
+  renderSide(h);side.classList.remove('open');window.scrollTo(0,0);
+}
+$('#menu').onclick=()=>side.classList.toggle('open');
+$('#scrim').onclick=()=>side.classList.remove('open');
+window.addEventListener('hashchange',route);route();
+
+</script></body></html>
